@@ -79,7 +79,7 @@ tp_image_utils::ColorMap ExtractRect::extractRect(const tp_image_utils::ColorMap
 
   if(sourcePoints.size()<4)
   {
-    errors.push_back("To few source points!");
+    errors.emplace_back("To few source points!");
     return tp_image_utils::ColorMap();
   }
 
@@ -128,14 +128,14 @@ tp_image_utils::ColorMap ExtractRect::extractRect(const tp_image_utils::ColorMap
 
     if(point.type==tp_image_utils::PointTypeRectCorner)
     {
-      errors.push_back("To many corners!");
+      errors.emplace_back("To many corners!");
       return tp_image_utils::ColorMap();
     }
   }
 
   if(leftPoints.empty())
   {
-    errors.push_back("To few corners!");
+    errors.emplace_back("To few corners!");
     return tp_image_utils::ColorMap();
   }
 
@@ -233,8 +233,8 @@ tp_image_utils::ColorMap ExtractRect::extractRect(const tp_image_utils::ColorMap
     sourcePoints.push_back(p);
   }
 
-  for(size_t i=0; i<sourcePoints.size(); i++)
-    sourcePoints[i].type = tp_image_utils::PointTypeRectCorner;
+  for(auto& i : sourcePoints)
+    i.type = tp_image_utils::PointTypeRectCorner;
 
   return extractRect(sourceImage, sourcePoints, width, height, errors);
 }

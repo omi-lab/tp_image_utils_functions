@@ -54,19 +54,19 @@ tp_image_utils::ColorMap signedDistanceField(const tp_image_utils::ColorMap& src
     while(s<sMax)
     {
       dist++;
-      int distSQ=tpMin(maxSq, int(ceil(dist*dist)));
+      int distSQ=tpMin(maxSq, int(std::ceil(dist*dist)));
       uint8_t a=0;
       if(s->r>0)
       {
         blackTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(x, y), distSQ);
-        dist = std::sqrt(distSQ);
-        a = 127 + tpMin(dist*f, 128.0f);
+        dist = std::sqrt(float(distSQ));
+        a = uint8_t(127 + tpMin(dist*f, 128.0f));
       }
       else
       {
         whiteTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(x, y), distSQ);
-        dist = sqrt(distSQ);
-        a = 128 - tpMin(dist*f, 128.0f);
+        dist = std::sqrt(float(distSQ));
+        a = uint8_t(128 - tpMin(dist*f, 128.0f));
       }
 
       d->r = a;
@@ -117,31 +117,31 @@ tp_image_utils::ColorMap signedDistanceField(const tp_image_utils::ColorMap& src
 
     for(int y=0; y<height; y++)
     {
-      int sy = yf*float(y);
+      auto sy = int(yf*float(y));
       TPPixel* d = dst.data() + (y*w);
       float dist=radius;
 
       for(int x=0; x<width; x++)
       {
-        int sx = xf*float(x);
+        auto sx = int(xf*float(x));
 
         const TPPixel* s = src.constData() + (sy + w);
         s+=sx;
 
         dist+=xf;
-        int distSQ=tpMin(maxSq, int(ceil(dist*dist)));
+        int distSQ=tpMin(maxSq, int(std::ceil(dist*dist)));
         uint8_t a=0;
         if(s->r>0)
         {
           blackTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(sx, sy), distSQ);
-          dist = sqrt(distSQ);
-          a = 127 + tpMin(dist*f, 128.0f);
+          dist = std::sqrt(float(distSQ));
+          a = uint8_t(127 + tpMin(dist*f, 128.0f));
         }
         else
         {
           whiteTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(sx, sy), distSQ);
-          dist = sqrt(distSQ);
-          a = 128 - tpMin(dist*f, 128.0f);
+          dist = std::sqrt(float(distSQ));
+          a = uint8_t(128 - tpMin(dist*f, 128.0f));
         }
 
         d->r = a;
@@ -193,18 +193,18 @@ tp_image_utils::ByteMap signedDistanceField(const tp_image_utils::ByteMap& src, 
       for(int x=0; x<w; x++)
       {
         dist++;
-        int distSQ=tpMin(maxSq, int(ceil(dist*dist)));
+        int distSQ=tpMin(maxSq, int(std::ceil(dist*dist)));
         if((*s)>0)
         {
           blackTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(x, y), distSQ);
-          dist = sqrt(distSQ);
-          (*d) = 127 + tpMin(dist*f, 128.0f);
+          dist = std::sqrt(float(distSQ));
+          (*d) = uint8_t(127 + tpMin(dist*f, 128.0f));
         }
         else
         {
           whiteTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(x, y), distSQ);
-          dist = sqrt(distSQ);
-          (*d) = 128 - tpMin(dist*f, 128.0f);
+          dist = std::sqrt(float(distSQ));
+          (*d) = uint8_t(128 - tpMin(dist*f, 128.0f));
         }
 
         s++;
@@ -256,8 +256,8 @@ tp_image_utils::ByteMap distanceField(const tp_image_utils::ByteMap& src, int ra
         {
           int distSQ = maxSq;
           blackTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(x, y), distSQ);
-          float dist=sqrt(distSQ);
-          (*d) = tpMin(dist*f, 255.0f);
+          float dist=std::sqrt(float(distSQ));
+          (*d) = uint8_t(tpMin(dist*f, 255.0f));
         }
         else
         {
@@ -306,25 +306,25 @@ tp_image_utils::ByteMap signedDistanceField(const tp_image_utils::ByteMap& src, 
     uint8_t* d = dst.data();
     for(int y=0; y<height; y++)
     {
-      int sy = yf*float(y);
+      auto sy = size_t(yf*float(y));
       float dist=radius;
 
       for(int x=0; x<width; x++)
       {
-        int sx = xf*float(x);
+        auto sx = size_t(xf*float(x));
         dist+=xf;
-        int distSQ=tpMin(maxSq, int(ceil(dist*dist)));
+        int distSQ=tpMin(maxSq, int(std::ceil(dist*dist)));
         if(src.pixel(sx, sy)>0)
         {
           blackTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(sx, sy), distSQ);
-          dist = sqrt(distSQ);
-          (*d) = 127 + tpMin(dist*f, 128.0f);
+          dist = std::sqrt(float(distSQ));
+          (*d) = uint8_t(127.0f + tpMin(dist*f, 128.0f));
         }
         else
         {
           whiteTree.closestPoint(tp_quad_tree::QuadTreeInt::Coord(sx, sy), distSQ);
-          dist = sqrt(distSQ);
-          (*d) = 128 - tpMin(dist*f, 128.0f);
+          dist = std::sqrt(float(distSQ));
+          (*d) = uint8_t(128.0f - tpMin(dist*f, 128.0f));
         }
         d++;
       }

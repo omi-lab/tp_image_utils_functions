@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 
-#include <math.h>
+#include <cmath>
 
 namespace tp_image_utils_functions
 {
@@ -15,12 +15,11 @@ struct Point_lt
   int x;
   int y;
   //Set true when this point has been used
-  bool taken;
+  bool taken{false};
 
   Point_lt(int x_=0, int y_=0):
     x(x_),
-    y(y_),
-    taken(false)
+    y(y_)
   {
 
   }
@@ -29,6 +28,7 @@ struct Point_lt
 //##################################################################################################
 class Histogram
 {
+  TP_NONCOPYABLE(Histogram);
 public:
   //################################################################################################
   Histogram(int min, int max, int deviation, int maxBins):
@@ -59,8 +59,8 @@ public:
   //################################################################################################
   void addPoint(int value)
   {
-    int i    = float((value-m_deviation) - m_min) / m_div;
-    int iMax = float((value+m_deviation) - m_min) / m_div;
+    int i    = int(float((value-m_deviation) - m_min) / m_div);
+    int iMax = int(float((value+m_deviation) - m_min) / m_div);
     iMax++;
 
     i    = tpBound(0, i,    m_binCount);
@@ -98,7 +98,7 @@ public:
   //################################################################################################
   int value(int binNumber)
   {
-    return (binNumber*m_div) + m_min;
+    return int(binNumber*m_div) + m_min;
   }
 
 private:
@@ -170,8 +170,9 @@ std::vector<Point_lt> calculateLine(const std::vector<Point_lt>& clusterPoints)
 
   //-- Thranslate all points relative to 0 ---------------------------------------------------------
   std::vector<Point_lt> offsetPoints;
+  offsetPoints.reserve(clusterPoints.size());
   for(const Point_lt& p : clusterPoints)
-    offsetPoints.push_back(Point_lt(p.x - cx, p.y - cy));
+    offsetPoints.emplace_back(int(p.x - cx), int(p.y - cy));
 
 
   //-- Find the furthest point from 0 --------------------------------------------------------------
@@ -211,7 +212,7 @@ std::vector<Point_lt> calculateLine(const std::vector<Point_lt>& clusterPoints)
       ay+=p.y;
     }
 
-    float length = sqrt((ax*ax) + (ay*ay));
+    float length = std::sqrt((ax*ax) + (ay*ay));
     ax /= length;
     ay /= length;
   }
@@ -225,8 +226,8 @@ std::vector<Point_lt> calculateLine(const std::vector<Point_lt>& clusterPoints)
   }
 
   std::vector<Point_lt> result;
-  result.push_back(Point_lt(cx-ax, cy-ay));
-  result.push_back(Point_lt(cx+ax, cy+ay));
+  result.emplace_back(int(cx-ax), int(cy-ay));
+  result.emplace_back(int(cx+ax), int(cy+ay));
   return result;
 }
 
@@ -234,26 +235,17 @@ std::vector<Point_lt> calculateLine(const std::vector<Point_lt>& clusterPoints)
 struct IntersectionDetails_lt
 {
   //An id given to each intersection so that we dont use them twice
-  int id;
+  int id{-1};
 
   //How likely is this intersection to be real
-  float score;
+  float score{0.0f};
 
   //The index of the lines
-  int line1;
-  int line2;
+  int line1{-1};
+  int line2{-1};
 
   //The location of the intersection
   tp_image_utils::Point point;
-
-  IntersectionDetails_lt():
-    id(-1),
-    score(0.0f),
-    line1(-1),
-    line2(-1)
-  {
-
-  }
 };
 
 //##################################################################################################
@@ -263,22 +255,14 @@ struct LineDetails_lt
   std::vector<int> endIntersections;
 
   //The index of the intersections that have been picked
-  int joinStart;
-  int joinEnd;
+  int joinStart{-1};
+  int joinEnd{-1};
 
   //The extended start and end positions that we will used to calculate intersections
   tp_image_utils::Point a;
   tp_image_utils::Point b;
 
-  bool done;
-
-  LineDetails_lt():
-    joinStart(-1),
-    joinEnd(-1),
-    done(false)
-  {
-
-  }
+  bool done{false};
 };
 
 }
@@ -290,21 +274,21 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
 {
   std::vector<std::vector<tp_image_utils::Point> > results;
 
-  int maxDist = (2*source.width()) + (2*source.height());
+  int maxDist = int((2*source.width()) + (2*source.height()));
 
   //-- Extract the points from the source image ----------------------------------------------------
   std::vector<Point_lt> points;
   {
     const uint8_t* src = source.constData();
-    int yMax = source.height();
-    int xMax = source.width();
-    for(int y=0; y<yMax; y++)
+    size_t yMax = source.height();
+    size_t xMax = source.width();
+    for(size_t y=0; y<yMax; y++)
     {
-      for(int x=0; x<xMax; x++)
+      for(size_t x=0; x<xMax; x++)
       {
         if((*src)>128)
         {
-          points.push_back(Point_lt(x, y));
+          points.emplace_back(int(x), int(y));
           if(points.size()>=10000)
           {
             y=yMax;
@@ -334,19 +318,19 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
     {
       float j = -(float(c+1)/50.0f);
       for(const Point_lt& point : tpConst(points))
-        (*(dst++)) = (j*float(point.y)) - float(point.x); //Distance on the x axis
+        (*(dst++)) = int((j*float(point.y)) - float(point.x)); //Distance on the x axis
 
       j = -(float(c)/50.0f);
       for(const Point_lt& point : tpConst(points))
-        (*(dst++)) = (j*float(point.x)) - float(point.y); //Distance on the y axis
+        (*(dst++)) = int((j*float(point.x)) - float(point.y)); //Distance on the y axis
 
       j = (float(c+1)/50.0f);
       for(const Point_lt& point : tpConst(points))
-        (*(dst++)) = (j*float(point.x)) - float(point.y); //Distance on the y axis
+        (*(dst++)) = int((j*float(point.x)) - float(point.y)); //Distance on the y axis
 
       j = (float(c)/50.0f);
       for(const Point_lt& point : tpConst(points))
-        (*(dst++)) = (j*float(point.y)) - float(point.x); //Distance on the x axis
+        (*(dst++)) = int((j*float(point.y)) - float(point.x)); //Distance on the x axis
     }
   }
 
@@ -427,10 +411,9 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
 
     //Calculate the line
     {
-      std::vector<tp_image_utils::Point> line;
+      std::vector<tp_image_utils::Point>& line = results.emplace_back();
       for(const Point_lt& p : calculateLine(clusterPoints))
-        line.push_back(tp_image_utils::Point(p.x, p.y));
-      results.push_back(line);
+        line.emplace_back(tp_image_utils::Point(p.x, p.y));
     }
   }
 
@@ -489,17 +472,15 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
 
         //Replicate this 4 time for (start,start)(start,end)(end,end)(end,start)
         std::vector<std::pair<int, int> > ends;
-        ends.push_back({0, 1});
-        ends.push_back({0, 0});
-        ends.push_back({1, 0});
-        ends.push_back({1, 1});
+        ends.emplace_back(0, 1);
+        ends.emplace_back(0, 0);
+        ends.emplace_back(1, 0);
+        ends.emplace_back(1, 1);
 
-        for(int i=0; i<int(ends.size()); i++)
+        for(const std::pair<int, int>& end : ends)
         {
-          const std::pair<int, int>& end = ends.at(i);
-
-          auto pLine  = line.at(end.first);
-          auto pOther = other.at(end.second);
+          auto pLine  = line.at(size_t(end.first));
+          auto pOther = other.at(size_t(end.second));
 
           float dx = pLine.x-pOther.x;
           float dy = pLine.y-pOther.y;
@@ -660,23 +641,23 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
   //-- Debug results -------------------------------------------------------------------------------
   {
     //Add intersections for debug
-    if(0)
+#if 0
     {
       //Add the original detected lines for debug
-      if(0)
-        results.insert(results.end(), lines.begin(), lines.end());
-
+#if 0
+      results.insert(results.end(), lines.begin(), lines.end());
+#endif
       for(const IntersectionDetails_lt& intersection : tpConst(intersections))
       {
         int len=4;
-        std::vector<tp_image_utils::Point> square;
-        square.push_back(tp_image_utils::Point(intersection.point.x-len, intersection.point.y-len));
-        square.push_back(tp_image_utils::Point(intersection.point.x-len, intersection.point.y+len));
-        square.push_back(tp_image_utils::Point(intersection.point.x+len, intersection.point.y+len));
-        square.push_back(tp_image_utils::Point(intersection.point.x+len, intersection.point.y-len));
-        results.push_back(square);
+        std::vector<tp_image_utils::Point>& square = results.emplace_back();
+        square.emplace_back(tp_image_utils::Point(intersection.point.x-len, intersection.point.y-len));
+        square.emplace_back(tp_image_utils::Point(intersection.point.x-len, intersection.point.y+len));
+        square.emplace_back(tp_image_utils::Point(intersection.point.x+len, intersection.point.y+len));
+        square.emplace_back(tp_image_utils::Point(intersection.point.x+len, intersection.point.y-len));
       }
     }
+#endif
   }
 
   return results;

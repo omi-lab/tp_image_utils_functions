@@ -1,7 +1,7 @@
 #include "tp_image_utils_functions/AlignImages.h"
 #include "tp_image_utils_functions/ExtractRect.h"
 
-#include <math.h>
+#include <cmath>
 
 namespace tp_image_utils_functions
 {
@@ -25,16 +25,17 @@ AlignImages::Rect AlignImages::Rect::intersected(const AlignImages::Rect& other)
 }
 
 //##################################################################################################
-std::pair<int, int> AlignImages::calculateMicroAlignment(const tp_image_utils::ByteMap& reference,
-                                                         const tp_image_utils::ByteMap& other,
-                                                         size_t maxOffset)
+std::pair<size_t, size_t> AlignImages::calculateMicroAlignment(const tp_image_utils::ByteMap& reference,
+                                                               const tp_image_utils::ByteMap& other,
+                                                               size_t maxOffset)
 {
+  std::pair<size_t, size_t> translation(0, 0);
+
   size_t steps = 100;
   size_t margin = maxOffset+3;
   size_t minD = steps + (margin*2) + 2;
   size_t best = (steps*steps) * 255;
 
-  std::pair<size_t, size_t> translation(0, 0);
 
   if(reference.size() != other.size())
     return std::pair<int, int>(0, 0);
@@ -84,10 +85,10 @@ void AlignImages::translateAndClipPair(const std::pair<int, int>& translation,
 
   Rect i = refRect.intersected(imgRect);
 
-  reference = reference.subImage(size_t(i.x), size_t(i.y), size_t(i.w+i.w), size_t(i.y+i.h));
+  reference = reference.subImage(size_t(i.x), size_t(i.y), size_t(i.w)+size_t(i.w), size_t(i.y)+size_t(i.h));
   i.x-=tx;
   i.y-=ty;
-  image = image.subImage(size_t(i.x), size_t(i.y), size_t(i.w+i.w), size_t(i.y+i.h));
+  image = image.subImage(size_t(i.x), size_t(i.y), size_t(i.w)+size_t(i.w), size_t(i.y)+size_t(i.h));
 }
 
 //##################################################################################################
@@ -138,9 +139,8 @@ AlignImages::SkewedRegion AlignImages::calculateSkewedRegion(const tp_image_util
   {
     for(int y=-int(maxOffset); y<=int(maxOffset); y++)
     {
-      for(int c=0; c<4; c++)
+      for(CornerDetails_lt* cc : corners)
       {
-        CornerDetails_lt* cc = corners[c];
         cc->s =0.0f;
         cc->ax=0.0f;
         cc->ay=0.0f;
@@ -162,11 +162,9 @@ AlignImages::SkewedRegion AlignImages::calculateSkewedRegion(const tp_image_util
 
           float s = abs(int(reference.pixel(px, py)) - int(other.pixel(size_t(opx), size_t(opy))));
 
-          for(int c=0; c<4; c++)
+          for(CornerDetails_lt* cc : corners)
           {
-            CornerDetails_lt* cc = corners[c];
-
-            float wt = 1.0f-(fabs(cc->fx-ofx) * fabs(cc->fy-ofy));
+            float wt = 1.0f-(std::fabs(cc->fx-ofx) * std::fabs(cc->fy-ofy));
 
             cc->s  += wt*s;
             cc->ax += wt*float(x);
@@ -176,10 +174,8 @@ AlignImages::SkewedRegion AlignImages::calculateSkewedRegion(const tp_image_util
         }
       }
 
-      for(int c=0; c<4; c++)
+      for(CornerDetails_lt* cc : corners)
       {
-        CornerDetails_lt* cc = corners[c];
-
         float sw = cc->s/cc->wt;
         if(sw<cc->best && cc->wt>1.0f)
         {
@@ -191,12 +187,11 @@ AlignImages::SkewedRegion AlignImages::calculateSkewedRegion(const tp_image_util
     }
   }
 
-  for(int c=0; c<4; c++)
+  for(CornerDetails_lt* cc : corners)
   {
-    CornerDetails_lt* cc = corners[c];
     int px = int((cc->fx*fw) + float(cc->translation.first));
     int py = int((cc->fy*fh) + float(cc->translation.second));
-    result.otherRegion.push_back(tp_image_utils::Point(tp_image_utils::PointTypeRectCorner, px, py));
+    result.otherRegion.emplace_back(tp_image_utils::PointTypeRectCorner, px, py);
   }
 
   return result;
@@ -215,8 +210,8 @@ void AlignImages::extractAndClipPair(const AlignImages::SkewedRegion& skewedRegi
     const auto& r = skewedRegion.referenceRect;
     reference = reference.subImage(size_t(r.x),
                                    size_t(r.y),
-                                   size_t(r.x+r.w),
-                                   size_t(r.y+r.h));
+                                   size_t(r.x)+size_t(r.w),
+                                   size_t(r.y)+size_t(r.h));
   }
 
   if((skewedRegion.otherRegion.size() == 4)                                                 &&

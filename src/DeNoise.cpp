@@ -16,12 +16,12 @@ ByteRegions::ByteRegions(const tp_image_utils::ByteMap& src, bool addCorners)
   if(w<1 || h<1)
     return;
 
-  int ci=0;
+  size_t ci=0;
   regions.resize(w*h);
   map.resize(w*h);
   int* done      = new int[w*h];
-  std::pair<int, int>* partial = new std::pair<int, int>[w*h*8];
-  int partialCount=0;
+  auto partial = new std::pair<int, int>[w*h*8];
+  size_t partialCount=0;
 
   memset(done, 0, w*h*sizeof(int));
 
@@ -33,24 +33,24 @@ ByteRegions::ByteRegions(const tp_image_utils::ByteMap& src, bool addCorners)
       (*d) = (-int(*s))-1;
   }
 
-  for(int y=0; y<h; y++)
+  for(size_t y=0; y<h; y++)
   {
-    for(int x=0; x<w; x++)
+    for(size_t x=0; x<w; x++)
     {
-      int offset = (y*w)+x;
+      size_t offset = (y*w)+x;
 
       //Don't bother if we already have a count for this
       if(map[offset]>=0)
         continue;
 
-      int i = ci;
+      size_t i = ci;
       ci++;
       int color = map[offset];
 
-      map[offset] = i;
+      map[offset] = int(i);
 
       ByteRegion& region = regions[i];
-      region.value=int(-1-color);
+      region.value=uint8_t(-1-color);
       region.count=0;
 
       partialCount=0;
@@ -70,24 +70,24 @@ ByteRegions::ByteRegions(const tp_image_utils::ByteMap& src, bool addCorners)
       while(partialCount>0)
       {
         partialCount--;
-        int px = partial[partialCount].first;
-        int py = partial[partialCount].second;
+        auto px = size_t(partial[partialCount].first );
+        auto py = size_t(partial[partialCount].second);
 
-        if(px<0 || py<0 || px>=w || py>=h)
+        if(px>=w || py>=h)
           continue;
 
-        int po = (py*w)+px;
+        size_t po = (py*w)+px;
 
-        if(done[po]==i)
+        if(done[po]==int(i))
           continue;
 
-        done[po]=i;
+        done[po]=int(i);
 
-        if(map[po]!=color)
+        if(map[size_t(po)]!=color)
           continue;
 
         region.count++;
-        map[po]=i;
+        map[po]=int(i);
         partial[partialCount]=std::pair<int, int>(px-1, py  ); partialCount++;
         partial[partialCount]=std::pair<int, int>(px+1, py  ); partialCount++;
         partial[partialCount]=std::pair<int, int>(px  , py-1); partialCount++;
@@ -125,12 +125,12 @@ void ByteRegions::calculateBoundingBoxes()
     }
   }
 
-  for(int y=0; y<h; y++)
+  for(size_t y=0; y<h; y++)
   {
-    for(int x=0; x<w; x++)
+    for(size_t x=0; x<w; x++)
     {
       int index = map[(y*w)+x];
-      ByteRegion& region = regions[index];
+      ByteRegion& region = regions[size_t(index)];
 
       if(region.minX>x)
         region.minX=x;
@@ -149,7 +149,7 @@ void ByteRegions::calculateBoundingBoxes()
 
 //##################################################################################################
 tp_image_utils::ByteMap deNoise(const tp_image_utils::ByteMap& src,
-                                int minSize,
+                                size_t minSize,
                                 bool addCorners,
                                 uint8_t solid,
                                 uint8_t space)
@@ -157,8 +157,8 @@ tp_image_utils::ByteMap deNoise(const tp_image_utils::ByteMap& src,
   if(minSize<2)
     return src;
 
-  int w = src.width();
-  int h = src.height();
+  size_t w = src.width();
+  size_t h = src.height();
 
   if(w<1 || h<1)
     return src;
@@ -167,11 +167,11 @@ tp_image_utils::ByteMap deNoise(const tp_image_utils::ByteMap& src,
   ByteRegions regions(src, addCorners);
 
   uint8_t* d = dst.data();
-  for(int y=0; y<h; y++)
+  for(size_t y=0; y<h; y++)
   {
-    for(int x=0; x<w; x++)
+    for(size_t x=0; x<w; x++)
     {
-      int index = regions.map[(y*w)+x];
+      auto index = size_t(regions.map[(y*w)+x]);
       const ByteRegion& region = regions.regions[index];
       (*d) = (region.value==space || region.count<minSize)?space:solid;
 
@@ -188,14 +188,14 @@ tp_image_utils::ByteMap deNoiseBlobs(const tp_image_utils::ByteMap& src,
                      float maxAspectRatio,
                      float minDensity,
                      float maxDensity,
-                     int minSize,
-                     int maxSize,
+                     size_t minSize,
+                     size_t maxSize,
                      bool addCorners,
                      uint8_t solid,
                      uint8_t space)
 {
-  int w = src.width();
-  int h = src.height();
+  size_t w = src.width();
+  size_t h = src.height();
 
   if(w<1 || h<1)
     return src;
@@ -220,8 +220,8 @@ tp_image_utils::ByteMap deNoiseBlobs(const tp_image_utils::ByteMap& src,
 
       (*e) = 0;
 
-      int rw = (r->maxX - r->minX)+1;
-      int rh = (r->maxY - r->minY)+1;
+      size_t rw = (r->maxX - r->minX)+1;
+      size_t rh = (r->maxY - r->minY)+1;
 
       float ar = (rw>rh)?(float(rh)/float(rw)):(float(rw)/float(rh));
 
@@ -245,11 +245,11 @@ tp_image_utils::ByteMap deNoiseBlobs(const tp_image_utils::ByteMap& src,
 
 
   uint8_t* d = dst.data();
-  for(int y=0; y<h; y++)
+  for(size_t y=0; y<h; y++)
   {
-    for(int x=0; x<w; x++)
+    for(size_t x=0; x<w; x++)
     {
-      int index = regions.map[(y*w)+x];
+      auto index = size_t(regions.map[(y*w)+x]);
       (*d) = (erase[index])?space:solid;
 
       d++;
@@ -261,15 +261,15 @@ tp_image_utils::ByteMap deNoiseBlobs(const tp_image_utils::ByteMap& src,
 
 //##################################################################################################
 tp_image_utils::ByteMap deNoiseStripes(const tp_image_utils::ByteMap& src,
-                                       int minSize,
+                                       size_t minSize,
                                        uint8_t solid,
                                        uint8_t space)
 {
   if(minSize<2)
     return src;
 
-  int w = src.width();
-  int h = src.height();
+  size_t w = src.width();
+  size_t h = src.height();
 
   if(w<1 || h<1)
     return src;
@@ -277,11 +277,11 @@ tp_image_utils::ByteMap deNoiseStripes(const tp_image_utils::ByteMap& src,
   tp_image_utils::ByteMap dst(w, h);
 
   //Search columns
-  for(int x=0; x<w; x++)
+  for(size_t x=0; x<w; x++)
   {
-    int count=0;
+    size_t count=0;
     bool spaceFound=false;
-    for(int y=0; y<h; y++)
+    for(size_t y=0; y<h; y++)
     {
       if(src.pixel(x, y)==solid)
         count++;
@@ -292,7 +292,7 @@ tp_image_utils::ByteMap deNoiseStripes(const tp_image_utils::ByteMap& src,
         if(count>0)
         {
           uint8_t val = (spaceFound && count<minSize)?space:solid;
-          for(int p=y-count; p<y; p++)
+          for(size_t p=y-count; p<y; p++)
             dst.setPixel(x, p, val);
 
           count=0;
@@ -305,17 +305,17 @@ tp_image_utils::ByteMap deNoiseStripes(const tp_image_utils::ByteMap& src,
     if(count>0)
     {
       uint8_t val = solid;
-      for(int p=h-count; p<h; p++)
+      for(size_t p=h-count; p<h; p++)
         dst.setPixel(x, p, val);
     }
   }
 
   //Search rows
-  for(int y=0; y<h; y++)
+  for(size_t y=0; y<h; y++)
   {
-    int count=0;
+    size_t count=0;
     bool spaceFound=false;
-    for(int x=0; x<w; x++)
+    for(size_t x=0; x<w; x++)
     {
       if(dst.pixel(x, y)==solid)
         count++;
@@ -326,7 +326,7 @@ tp_image_utils::ByteMap deNoiseStripes(const tp_image_utils::ByteMap& src,
         if(count>0)
         {
           uint8_t val = (spaceFound && count<minSize)?space:solid;
-          for(int p=x-count; p<x; p++)
+          for(size_t p=x-count; p<x; p++)
             dst.setPixel(p, y, val);
 
           count=0;
@@ -339,7 +339,7 @@ tp_image_utils::ByteMap deNoiseStripes(const tp_image_utils::ByteMap& src,
     if(count>0)
     {
       uint8_t val = solid;
-      for(int p=w-count; p<w; p++)
+      for(size_t p=w-count; p<w; p++)
         dst.setPixel(p, y, val);
     }
   }
@@ -349,23 +349,23 @@ tp_image_utils::ByteMap deNoiseStripes(const tp_image_utils::ByteMap& src,
 
 //##################################################################################################
 tp_image_utils::ByteMap deNoiseKnoblets(const tp_image_utils::ByteMap& src,
-                                        int knobletWidth,
+                                        size_t knobletWidth,
                                         uint8_t solid,
                                         uint8_t space)
 {
   if(knobletWidth<1)
     return src;
 
-  int w = src.width();
-  int h = src.height();
+  size_t w = src.width();
+  size_t h = src.height();
 
   if(w<(knobletWidth+2) || h<(knobletWidth+2))
     return src;
 
   tp_image_utils::ByteMap dst = src;
 
-  int yMax = h-(knobletWidth+1);
-  for(int y=1; y<yMax; y++)
+  size_t yMax = h-(knobletWidth+1);
+  for(size_t y=1; y<yMax; y++)
   {
     uint8_t* d = dst.data()+(y*w)+1;
     uint8_t* dMax = d + (w-(knobletWidth+1));
@@ -375,8 +375,8 @@ tp_image_utils::ByteMap deNoiseKnoblets(const tp_image_utils::ByteMap& src,
       {
         auto val = [=](int x, int y)
         {
-          int px = (x*xincx) + (y*yincx);
-          int py = (x*xincy) + (y*yincy);
+          size_t px = size_t(x*xincx) + size_t(y*yincx);
+          size_t py = size_t(x*xincy) + size_t(y*yincy);
 
           return *(d + ((py*w) + px));
         };
@@ -387,11 +387,11 @@ tp_image_utils::ByteMap deNoiseKnoblets(const tp_image_utils::ByteMap& src,
         if(val(-1,  1)!=solid)return;
 
         //Center of the kernel
-        for(int i=0; i<=knobletWidth; i++)
+        for(size_t i=0; i<=knobletWidth; i++)
         {
-          if(val(i, -1)!=space)return;
-          if(val(i,  1)!=solid)return;
-          if(val(i,  0)==space)
+          if(val(int(i), -1)!=space)return;
+          if(val(int(i),  1)!=solid)return;
+          if(val(int(i),  0)==space)
           {
             (*d) = space;
             return;
@@ -403,10 +403,10 @@ tp_image_utils::ByteMap deNoiseKnoblets(const tp_image_utils::ByteMap& src,
       {
         auto val = [=](int x, int y)
         {
-          int px = (x*xincx) + (y*yincx);
-          int py = (x*xincy) + (y*yincy);
+          size_t px = size_t(x*xincx) + size_t(y*yincx);
+          size_t py = size_t(x*xincy) + size_t(y*yincy);
 
-          return *(d + ((py*w) + px));
+          return *(d + (py*w) + px);
         };
 
         //Left side of the kernel
@@ -415,11 +415,11 @@ tp_image_utils::ByteMap deNoiseKnoblets(const tp_image_utils::ByteMap& src,
         if(val(-1,  1)!=space)return;
 
         //Center of the kernel
-        for(int i=0; i<=knobletWidth; i++)
+        for(size_t i=0; i<=knobletWidth; i++)
         {
-          if(val(i, -1)!=space)return;
-          if(val(i,  1)!=solid)return;
-          if(val(i,  0)==space)
+          if(val(int(i), -1)!=space)return;
+          if(val(int(i),  1)!=solid)return;
+          if(val(int(i),  0)==space)
           {
             (*d) = space;
             return;
@@ -431,8 +431,8 @@ tp_image_utils::ByteMap deNoiseKnoblets(const tp_image_utils::ByteMap& src,
       {
         auto val = [=](int x, int y)
         {
-          int px = (x*xincx) + (y*yincx);
-          int py = (x*xincy) + (y*yincy);
+          size_t px = size_t(x*xincx) + size_t(y*yincx);
+          size_t py = size_t(x*xincy) + size_t(y*yincy);
 
           return *(d + ((py*w) + px));
         };
@@ -443,12 +443,12 @@ tp_image_utils::ByteMap deNoiseKnoblets(const tp_image_utils::ByteMap& src,
         if(val(-1,  1)!=solid)return;
 
         //Center of the kernel
-        for(int i=0; i<=knobletWidth; i++)
+        for(size_t i=0; i<=knobletWidth; i++)
         {
-          if(val(i, -1)!=space)return;
-          if(val(i,  0)==space)
+          if(val(int(i), -1)!=space)return;
+          if(val(int(i),  0)==space)
           {
-            if(val(i,  1)==space)
+            if(val(int(i),  1)==space)
               (*d) = space;
             return;
           }
@@ -456,20 +456,53 @@ tp_image_utils::ByteMap deNoiseKnoblets(const tp_image_utils::ByteMap& src,
         }
       };
 
-      if((*d)==space)continue; else calcOnLine(1, 0,  1,  0);
-      if((*d)==space)continue; else calcOnLine(1, 0, -1,  0);
-      if((*d)==space)continue; else calcOnLine(0, 1,  0,  1);
-      if((*d)==space)continue; else calcOnLine(0, 1,  0, -1);
+      if((*d)==space)
+        continue;
+      calcOnLine(1, 0,  1,  0);
 
-      if((*d)==space)continue; else calcOnLeftCorner(1, 0,  1,  0);
-      if((*d)==space)continue; else calcOnLeftCorner(1, 0, -1,  0);
-      if((*d)==space)continue; else calcOnLeftCorner(0, 1,  0,  1);
-      if((*d)==space)continue; else calcOnLeftCorner(0, 1,  0, -1);
+      if((*d)==space)
+        continue;
+      calcOnLine(1, 0, -1,  0);
 
-      if((*d)==space)continue; else calcOnRightCorner(1, 0,  1,  0);
-      if((*d)==space)continue; else calcOnRightCorner(1, 0, -1,  0);
-      if((*d)==space)continue; else calcOnRightCorner(0, 1,  0,  1);
-      if((*d)==space)continue; else calcOnRightCorner(0, 1,  0, -1);
+      if((*d)==space)
+        continue;
+      calcOnLine(0, 1,  0,  1);
+
+      if((*d)==space)
+        continue;
+      calcOnLine(0, 1,  0, -1);
+
+      if((*d)==space)
+        continue;
+      calcOnLeftCorner(1, 0,  1,  0);
+
+      if((*d)==space)
+        continue;
+      calcOnLeftCorner(1, 0, -1,  0);
+
+      if((*d)==space)
+        continue;
+      calcOnLeftCorner(0, 1,  0,  1);
+
+      if((*d)==space)
+        continue;
+      calcOnLeftCorner(0, 1,  0, -1);
+
+      if((*d)==space)
+        continue;
+      calcOnRightCorner(1, 0,  1,  0);
+
+      if((*d)==space)
+        continue;
+      calcOnRightCorner(1, 0, -1,  0);
+
+      if((*d)==space)
+        continue;
+      calcOnRightCorner(0, 1,  0,  1);
+
+      if((*d)==space)
+        continue;
+      calcOnRightCorner(0, 1,  0, -1);
     }
   }
 

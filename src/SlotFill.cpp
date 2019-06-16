@@ -4,7 +4,7 @@
 #include "tp_utils/TimeUtils.h"
 #include "tp_utils/DebugUtils.h"
 
-#include <math.h>
+#include <cmath>
 
 namespace tp_image_utils_functions
 {
@@ -22,20 +22,20 @@ tp_image_utils::ByteMap slotFill(const tp_image_utils::ByteMap& src, const SlotF
   float fw = dst.width();
   float fh = dst.height();
 
-  int maxAngle = params.startAngle + params.maxAngle;
-  for(int a=params.startAngle; a<=maxAngle; a+=params.stepAngle)
+  size_t maxAngle = params.startAngle + params.maxAngle;
+  for(size_t a=params.startAngle; a<=maxAngle; a+=params.stepAngle)
   {
     float af = float(a) * static_cast<float>(0.01745329251994329576923690768489);
-    float saf = sin(af);
-    float caf = cos(af);
+    float saf = std::sin(af);
+    float caf = std::cos(af);
 
     //Calculate how large the rotated image will be
     tp_image_utils::ByteMap rot;
     {
-      float ix = fabs(saf*fw + caf*fh);
-      float iy = fabs(caf*fw + saf*fh);
-      float jx = fabs(saf*fw);
-      float jy = fabs(caf*fw);
+      float ix = std::fabs(saf*fw + caf*fh);
+      float iy = std::fabs(caf*fw + saf*fh);
+      float jx = std::fabs(saf*fw);
+      float jy = std::fabs(caf*fw);
 
       float i = tpMax(ix, jx);
       float j = tpMax(iy, jy);

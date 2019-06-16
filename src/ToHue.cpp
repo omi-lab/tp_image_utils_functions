@@ -63,7 +63,7 @@ tp_image_utils::ColorMap toHue(const tp_image_utils::ByteMap& src)
     float h = float(*s) * 1.411f;
     h = h * 180.0f / 3.14f;
 
-    d->r = uint8_t(tpBound(0, int(sin(h) * 255.0f), 255));
+    d->r = uint8_t(tpBound(0, int(std::sin(h) * 255.0f), 255));
     d->g = 0;//uint8_t((1.0f+sin(h+2.0943951f)) * 1.0f);
     d->b = 0;//uint8_t((1.0f+sin(h+4.1887902f)) * 1.0f);
     d->a = 255;

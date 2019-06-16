@@ -25,11 +25,12 @@ tp_image_utils::ColorMap drawPoints(const tp_image_utils::ColorMap& image,
     {
       std::vector<std::pair<int, int>> line;
 
+      line.reserve(pts.size()+1);
       for(const auto& p : pts)
-        line.push_back({p.x, p.y});
+        line.emplace_back(p.x, p.y);
 
-      if(style.closeLine && pts.size()>0)
-        line.push_back({pts.at(0).x, pts.at(0).y});
+      if(style.closeLine && pts.empty())
+        line.emplace_back(pts.at(0).x, pts.at(0).y);
 
       drawPolyline(dst, style.lineColor, line);
     }

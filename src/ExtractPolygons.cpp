@@ -28,8 +28,8 @@ std::string annotation(TPPixel i)
 template<typename T, typename I>
 void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils::Polygon>& results, bool annotate)
 {
-  int w = sourceImage.width();
-  int h = sourceImage.height();
+  size_t w = sourceImage.width();
+  size_t h = sourceImage.height();
 
   if(w<1 || h<1 || sourceImage.size()<1)
     return;
@@ -42,9 +42,9 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
 
   const I* s = sourceImage.constData();
   const uint8_t* m = mask.constData();
-  for(int y=0; y<h; y++)
+  for(size_t y=0; y<h; y++)
   {
-    for(int x=0; x<w; x++, s++, m++)
+    for(size_t x=0; x<w; x++, s++, m++)
     {
       if((*m)>0)
         continue;
@@ -52,7 +52,7 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
       I v=(*s);
 
       std::vector<glm::vec2> toFill;
-      toFill.push_back({x, y});
+      toFill.emplace_back(x, y);
       do
       {
         glm::vec2 p = toFill.at(toFill.size()-1);
@@ -61,18 +61,18 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
         if(p.x<0 || p.y<0 || p.x>=w || p.y>=h)
           continue;
 
-        if(mask.pixel(p.x, p.y) != 0)
+        if(mask.pixel(size_t(p.x), size_t(p.y)) != 0)
           continue;
 
-        if(sourceImage.pixel(p.x, p.y) != v)
+        if(sourceImage.pixel(size_t(p.x), size_t(p.y)) != v)
           continue;
 
-        mask.setPixel(p.x, p.y, 1);
+        mask.setPixel(size_t(p.x), size_t(p.y), 1);
 
-        toFill.push_back({p.x-1, p.y  });
-        toFill.push_back({p.x+1, p.y  });
-        toFill.push_back({p.x  , p.y-1});
-        toFill.push_back({p.x  , p.y+1});
+        toFill.emplace_back(p.x-1, p.y  );
+        toFill.emplace_back(p.x+1, p.y  );
+        toFill.emplace_back(p.x  , p.y-1);
+        toFill.emplace_back(p.x  , p.y+1);
       }
       while(!toFill.empty());
 
@@ -82,15 +82,15 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
       //   '<--'
       //     3
       int currentSide=0;
-      int cx = x;
-      int cy = y;
+      int cx = int(x);
+      int cy = int(y);
 
       auto different = [&sourceImage, w, h, &cx, &cy, v](int dx, int dy)
       {
         dx += cx;
         dy += cy;
-        if(dx<0 || dy<0 || dx>=w || dy>=h) return true;
-        return sourceImage.pixel(dx, dy) != v;
+        if(dx<0 || dy<0 || dx>=int(w) || dy>=int(h)) return true;
+        return sourceImage.pixel(size_t(dx), size_t(dy)) != v;
       };
 
       std::vector<glm::vec2> loop;
@@ -100,7 +100,7 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
         {
         case 0: //----------------------------------------------------------------------------------
         {
-          loop.push_back({cx, cy});
+          loop.emplace_back(cx, cy);
           if(different(0, 1))
           {
             currentSide = 1;
@@ -119,7 +119,7 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
 
         case 1: //----------------------------------------------------------------------------------
         {
-          loop.push_back({cx, cy+1});
+          loop.emplace_back(cx, cy+1);
           if(different(1, 0))
           {
             currentSide = 2;
@@ -138,7 +138,7 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
 
         case 2: //----------------------------------------------------------------------------------
         {
-          loop.push_back({cx+1, cy+1});
+          loop.emplace_back(cx+1, cy+1);
           if(different(0, -1))
           {
             currentSide = 3;
@@ -157,7 +157,7 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
 
         case 3: //----------------------------------------------------------------------------------
         {
-          loop.push_back({cx+1, cy});
+          loop.emplace_back(cx+1, cy);
           if(different(-1, 0))
           {
             currentSide = 0;
@@ -175,7 +175,7 @@ void simplePolygonExtractionImpl(const T& sourceImage, std::vector<tp_math_utils
         }
         }
 
-        if(cx==x && cy==y && currentSide==0)
+        if(cx==int(x) && cy==int(y) && currentSide==0)
           break;
       }
 

@@ -52,8 +52,8 @@ public:
 
 private:
   std::vector<int> m_matrixData;
-  size_t m_width;
-  size_t m_height;
+  size_t m_width{0};
+  size_t m_height{0};
 };
 
 //##################################################################################################

@@ -2,7 +2,7 @@
 
 #include "tp_image_utils/ColorMap.h"
 
-#include <math.h>
+#include <cmath>
 
 namespace tp_image_utils_functions
 {
@@ -17,7 +17,7 @@ int calcDist(int r1, int g1, int b1, int r2, int g2, int b2)
   int dg = g1-g2;
   int db = b1-b2;
 
-  return sqrt(dr*dr + dg*dg + db*db);
+  return int(std::sqrt(float(dr*dr + dg*dg + db*db)));
 }
 
 //##################################################################################################

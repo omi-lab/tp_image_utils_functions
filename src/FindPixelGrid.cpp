@@ -2,7 +2,7 @@
 
 #include "tp_image_utils/Scale.h"
 
-#include <math.h>
+#include <cmath>
 
 namespace tp_image_utils_functions
 {
@@ -15,7 +15,7 @@ float findBest(float calculated, float maxDiff, const std::vector<float>& points
   float best = calculated;
   for(float point : points)
   {
-    float diff = fabs(calculated - point);
+    float diff = std::fabs(calculated - point);
     if(diff < maxDiff)
     {
       best = point;
@@ -29,8 +29,9 @@ float findBest(float calculated, float maxDiff, const std::vector<float>& points
 float calculateOffset(float cellMean, const std::vector<float>& points)
 {
   std::vector<float> diffs;
+  diffs.reserve(points.size());
   for(float point : points)
-    diffs.push_back(point - (floor(point/cellMean)*cellMean));
+    diffs.emplace_back(point - (std::floor(point/cellMean)*cellMean));
 
   float diffsMean = 0.0f;
   float diffsSquaredSD = FindPixelGrid::squaredSD(diffs, diffsMean);
@@ -137,7 +138,7 @@ float FindPixelGrid::squaredSD(const std::vector<float>& values, float& mean)
 //##################################################################################################
 float FindPixelGrid::standardDeviation(const std::vector<int>& values, float& mean)
 {
-  return sqrt(squaredSD(values, mean));
+  return std::sqrt(squaredSD(values, mean));
 }
 
 //##################################################################################################
@@ -313,8 +314,8 @@ tp_image_utils::ByteMap FindPixelGrid::findPixelGrid(const tp_image_utils::ByteM
   float meanPixelWidth  = FindPixelGrid::findMeanPixelWidth(src);
   float meanPixelHeight = FindPixelGrid::findMeanPixelHeight(src);
 
-  size_t w = size_t(src.width() / meanPixelWidth);
-  size_t h = size_t(src.height() / meanPixelHeight);
+  auto w = size_t(src.width() / meanPixelWidth);
+  auto h = size_t(src.height() / meanPixelHeight);
 
   return scale(src, w, h);
 }
@@ -325,8 +326,8 @@ tp_image_utils::ColorMap FindPixelGrid::findPixelGrid(const tp_image_utils::Byte
   float meanPixelWidth  = FindPixelGrid::findMeanPixelWidth(src);
   float meanPixelHeight = FindPixelGrid::findMeanPixelHeight(src);
 
-  size_t w = size_t(src.width() / meanPixelWidth);
-  size_t h = size_t(src.height() / meanPixelHeight);
+  auto w = size_t(src.width() / meanPixelWidth);
+  auto h = size_t(src.height() / meanPixelHeight);
 
   return scale(src2, w, h);
 }
@@ -363,13 +364,13 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
     for(int a=0; a<90; a++)
     {
       float r = float(a)*3.1415926f/180.0f;
-      tp_image_utils::Point v(sin(r), cos(r));
+      tp_image_utils::Point v(std::sin(r), std::cos(r));
 
       float difference=0.0f;
       for(const tp_image_utils::Point& vec : vectors)
       {
         //Calculate the angle between the two vectors
-        float diff = acos(tp_image_utils::Point::dot(vec, v));
+        float diff = std::acos(tp_image_utils::Point::dot(vec, v));
 
         if(diff>1.5708f)
           diff = 3.14159f-diff;
@@ -390,13 +391,13 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
     for(float a=bestAngle-1.0f; a<aMax; a+=0.05f)
     {
       float r = a*3.1415926f/180.0f;
-      tp_image_utils::Point v(sin(r), cos(r));
+      tp_image_utils::Point v(std::sin(r), std::cos(r));
 
       float difference=0.0f;
       for(const tp_image_utils::Point& vec : vectors)
       {
         //Calculate the angle between the two vectors
-        float diff = acos(tp_image_utils::Point::dot(vec, v));
+        float diff = std::acos(tp_image_utils::Point::dot(vec, v));
 
         if(diff>1.5708f)
           diff = 3.14159f-diff;
@@ -419,14 +420,14 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
   {
     float t = params.angleDeviation*3.1415926f/180.0f;
     float r = float(bestAngle)*3.1415926f/180.0f;
-    tp_image_utils::Point v(sin(r), cos(r));
+    tp_image_utils::Point v(std::sin(r), std::cos(r));
 
     for(size_t i=0; i<vectors.size(); i++)
     {
       const auto& vec = vectors.at(i);
 
       //Calculate the angle between the two vectors
-      float diff = acos(tp_image_utils::Point::dot(vec, v));
+      float diff = std::acos(tp_image_utils::Point::dot(vec, v));
 
       if(diff>1.5708f)
         diff = 3.14159f-diff;
@@ -538,10 +539,10 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
       for(int i=int(hPoints.size())-1; i>=0; i--)
       {
         float point = hPoints.at(size_t(i));
-        float diff = point - ((floor(point/hMean)*hMean) + grid.origin.y);
+        float diff = point - ((std::floor(point/hMean)*hMean) + grid.origin.y);
         if(diff>hMeanHalf)
           diff-= hMean;
-        if(fabs(diff) > threshold)
+        if(std::fabs(diff) > threshold)
         {
           hPoints.erase(hPoints.begin()+i);
         }
@@ -562,11 +563,11 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
         float point = vPoints.at(size_t(i));
         float pOff = point - grid.origin.x;
 
-        float diff = pOff - ((floor(pOff/vMean)*vMean));
+        float diff = pOff - ((std::floor(pOff/vMean)*vMean));
         if(diff>vMeanHalf)
           diff-= vMean;
 
-        if(fabs(diff) > threshold)
+        if(std::fabs(diff) > threshold)
         {
           vPoints.erase(vPoints.begin()+i);
 
@@ -627,8 +628,8 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
   {
     rotate(*params.correctedCorners, -radians);
 
-    for(size_t i=0; i<params.correctedCorners->size(); i++)
-      (*params.correctedCorners)[i].type = tp_image_utils::PointTypeRectCorner;
+    for(auto& i : *params.correctedCorners)
+      i.type = tp_image_utils::PointTypeRectCorner;
   }
 
   return grid;

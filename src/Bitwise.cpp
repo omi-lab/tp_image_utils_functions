@@ -6,7 +6,7 @@ namespace tp_image_utils_functions
 //##################################################################################################
 const char* logicOpToString(LogicOp operation)
 {
-  static const char* names[16] =
+  static constexpr std::array<const char*, 16> names =
   {
     "False",
     "NOR",
@@ -26,7 +26,7 @@ const char* logicOpToString(LogicOp operation)
     "True"
   };
 
-  return names[tpBound(0, int(operation), 15)];
+  return names.at(tpBound(size_t(0), size_t(operation), names.size()-1));
 }
 
 //##################################################################################################
@@ -56,8 +56,9 @@ std::vector<std::string> logicalOps()
 {
   std::vector<std::string> logicalOps;
 
+  logicalOps.reserve(16);
   for(int i=0; i<16; i++)
-    logicalOps.push_back(logicOpToString(LogicOp(i)));
+    logicalOps.emplace_back(logicOpToString(LogicOp(i)));
 
   return logicalOps;
 }
@@ -67,30 +68,32 @@ tp_image_utils::ByteMap bitwise(const tp_image_utils::ByteMap& p,
                                 const tp_image_utils::ByteMap& q,
                                 LogicOp operation)
 {
-  static const uint8_t truthTable[16][4]=
+  static constexpr std::array<std::array<uint8_t, 4>, 16> truthTable=
   {
-    {  0,   0,   0,   0},  // LogicOpFalse
-    {255,   0,   0,   0},  // LogicOpNOR
-    {  0, 255,   0,   0},  // LogicOpConverseNonimplication
-    {255, 255,   0,   0},  // LogicOpNegationP
-    {  0,   0, 255,   0},  // LogicOpMaterialNonimplication
-    {255,   0, 255,   0},  // LogicOpNegationQ
-    {  0, 255, 255,   0},  // LogicOpXOR
-    {255, 255, 255,   0},  // LogicOpNAND
-    {  0,   0,   0, 255},  // LogicOpAND
-    {255,   0,   0, 255},  // LogicOpXNOR
-    {  0, 255,   0, 255},  // LogicOpQ
-    {255, 255,   0, 255},  // LogicOpMaterialImplication
-    {  0,   0, 255, 255},  // LogicOpP
-    {255,   0, 255, 255},  // LogicOpConverseImplication
-    {  0, 255, 255, 255},  // LogicOpOR
-    {255, 255, 255, 255}   // LogicOpTrue
+    {
+     {  0,   0,   0,   0},  // LogicOpFalse
+     {255,   0,   0,   0},  // LogicOpNOR
+     {  0, 255,   0,   0},  // LogicOpConverseNonimplication
+     {255, 255,   0,   0},  // LogicOpNegationP
+     {  0,   0, 255,   0},  // LogicOpMaterialNonimplication
+     {255,   0, 255,   0},  // LogicOpNegationQ
+     {  0, 255, 255,   0},  // LogicOpXOR
+     {255, 255, 255,   0},  // LogicOpNAND
+     {  0,   0,   0, 255},  // LogicOpAND
+     {255,   0,   0, 255},  // LogicOpXNOR
+     {  0, 255,   0, 255},  // LogicOpQ
+     {255, 255,   0, 255},  // LogicOpMaterialImplication
+     {  0,   0, 255, 255},  // LogicOpP
+     {255,   0, 255, 255},  // LogicOpConverseImplication
+     {  0, 255, 255, 255},  // LogicOpOR
+     {255, 255, 255, 255}   // LogicOpTrue
+   }
   };
 
   if(p.size() != q.size())
     return tp_image_utils::ByteMap();
 
-  const uint8_t* tt = &(truthTable[tpBound(0, int(operation), 15)][0]);
+  const uint8_t* tt = truthTable.at(tpBound(size_t(0), size_t(operation), truthTable.size()-1)).data();
 
   tp_image_utils::ByteMap d(p.width(), p.height());
 

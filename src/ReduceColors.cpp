@@ -17,13 +17,12 @@ struct Color_lt
   int r;
   int g;
   int b;
-  int count;
+  int count{0};
 
   Color_lt(int r_=0, int g_=0, int b_=0):
     r(r_),
     g(g_),
-    b(b_),
-    count(0)
+    b(b_)
   {
 
   }
@@ -127,7 +126,7 @@ tp_image_utils::ColorMap reduceColors(const tp_image_utils::ColorMap& src, int c
   for(int x=0; x<10; x+=4)
     for(int y=0; y<10; y+=4)
       for(int z=0; z<10; z+=4)
-        bins.push_back(Bin_lt(Color_lt(x*25, y*25, z*25)));
+        bins.emplace_back(Color_lt(x*25, y*25, z*25));
 
   std::vector<Color_lt> colors;
   colors.reserve(colorHash.size());

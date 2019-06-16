@@ -24,7 +24,7 @@ std::string channelModeToString(ChannelMode channelMode)
 ChannelMode channelModeFromString(const std::string& channelMode)
 {
   if(channelMode == "Interleaved") return ChannelMode::Interleaved;
-  else                             return ChannelMode::Separate;
+  return ChannelMode::Separate;
 }
 
 //##################################################################################################
@@ -48,7 +48,7 @@ std::string channelOrderToString(ChannelOrder channelOrder)
 ChannelOrder channelOrderFromString(const std::string& channelOrder)
 {
   if(channelOrder == "RGB") return ChannelOrder::RGB;
-  else                      return ChannelOrder::BGR;
+  return ChannelOrder::BGR;
 }
 
 //##################################################################################################

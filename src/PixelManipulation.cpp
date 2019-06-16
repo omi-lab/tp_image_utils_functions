@@ -9,9 +9,9 @@ namespace
 {
 
 //##################################################################################################
-typedef exprtk::symbol_table<float> symbol_table_lt;
-typedef exprtk::expression<float>     expression_lt;
-typedef exprtk::parser<float>             parser_lt;
+using symbol_table_lt =  exprtk::symbol_table<float>;
+using   expression_lt =  exprtk::expression<float>  ;
+using       parser_lt =  exprtk::parser<float>      ;
 
 //##################################################################################################
 struct Expr_lt

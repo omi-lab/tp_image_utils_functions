@@ -40,9 +40,9 @@ struct AlignImages
   This takes two single channel images and tries to align them so the absolute subtraction of the
   two images produces the lowest result.
   */
-  static std::pair<int, int> calculateMicroAlignment(const tp_image_utils::ByteMap& reference,
-                                                     const tp_image_utils::ByteMap& other,
-                                                     size_t maxOffset);
+  static std::pair<size_t, size_t> calculateMicroAlignment(const tp_image_utils::ByteMap& reference,
+                                                           const tp_image_utils::ByteMap& other,
+                                                           size_t maxOffset);
 
   //################################################################################################
   //! Translate and clip two images

@@ -52,14 +52,8 @@ namespace
 {
 struct BinData_lt
 {
-  int count;
-  int total;
-  BinData_lt():
-    count(0),
-    total(0)
-  {
-
-  }
+  int count{0};
+  int total{0};
 };
 }
 

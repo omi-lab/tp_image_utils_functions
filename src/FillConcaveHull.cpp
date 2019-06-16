@@ -4,7 +4,7 @@
 #include "tp_utils/TimeUtils.h"
 #include "tp_utils/DebugUtils.h"
 
-#include <math.h>
+#include <cmath>
 
 namespace tp_image_utils_functions
 {
@@ -15,23 +15,23 @@ tp_image_utils::ByteMap fillConcaveHull(const tp_image_utils::ByteMap& src, cons
   tp_utils::ElapsedTimer t;
   t.start();
 
-  int w = src.width();
-  int h = src.height();
+  size_t w = src.width();
+  size_t h = src.height();
 
   if(w<3 || h<3)
     return src;
 
   struct Pixel
   {
-    int value;
-    uint direction;
+    int32_t value;
+    uint32_t direction;
   };
 
   //-- Create and populate the scratch buffer ------------------------------------------------------
-  int firstH=w-1;
-  int firstV=h-1;
-  int lastH=1;
-  int lastV=1;
+  size_t firstH=w-1;
+  size_t firstV=h-1;
+  size_t lastH=1;
+  size_t lastV=1;
 
   std::vector<Pixel> buffer;
   buffer.resize(src.size());
@@ -39,9 +39,9 @@ tp_image_utils::ByteMap fillConcaveHull(const tp_image_utils::ByteMap& src, cons
     const uint8_t* s = src.constData();
     const uint8_t* sMax = s + src.size();
     Pixel* d = buffer.data();
-    for(int y=0; s<sMax; y++)
+    for(size_t y=0; s<sMax; y++)
     {
-      for(int x=0; x<w; s++, d++, x++)
+      for(size_t x=0; x<w; s++, d++, x++)
       {
         if((*s) == params.solid)
         {
@@ -63,27 +63,27 @@ tp_image_utils::ByteMap fillConcaveHull(const tp_image_utils::ByteMap& src, cons
     }
   }
 
-  auto getVal=[&](int x, int y)
+  auto getVal=[&](size_t x, size_t y)
   {
     return buffer.at((y*w)+x).value;
   };
 
-  const auto& getPixel=[&](int x, int y)
+  const auto& getPixel=[&](size_t x, size_t y)
   {
     return buffer.at((y*w)+x);
   };
 
-  auto setVal=[&](int x, int y, int v, int d)
+  auto setVal=[&](size_t x, size_t y, int v, uint32_t d)
   {
     auto& b = buffer[(y*w)+x];
     b.value = v;
     b.direction = d;
   };
 
-  int sxMax = tpMin(lastH+1, w-2);
-  int syMax = tpMin(lastV+1, h-2);
-  int sxMin = tpMax(2, firstH-1);
-  int syMin = tpMax(2, firstV-1);
+  size_t sxMax = tpMin(lastH+1, w-2);
+  size_t syMax = tpMin(lastV+1, h-2);
+  size_t sxMin = tpMax(size_t(2), firstH-1);
+  size_t syMin = tpMax(size_t(2), firstV-1);
 
   int label=1;
 
@@ -93,21 +93,21 @@ tp_image_utils::ByteMap fillConcaveHull(const tp_image_utils::ByteMap& src, cons
     int y;
     Vec(int x_, int y_):x(x_),y(y_){}
   };
-  const Vec vectorsA[4] = {{0,-1},{-1,0},{0,1},{1,0}};
-  const Vec vectorsB[4] = {{1,0},{0,1},{-1,0},{0,-1}};
-  const Vec* vectors = vectorsA;
+  const std::array<Vec, 4> vectorsA = {{{0,-1},{-1,0},{0,1},{1,0}}};
+  const std::array<Vec, 4> vectorsB = {{{1,0},{0,1},{-1,0},{0,-1}}};
+  auto vectors = &vectorsA;
 
-  uint currentVector=0;
-  auto advance = [&](int& x, int& y)
+  uint32_t currentVector=0;
+  auto advance = [&](size_t& x, size_t& y)
   {
-    for(int i=0; i<2; i++)
+    for(size_t i=0; i<2; i++)
     {
-      Vec v = vectors[currentVector];
+      Vec v = vectors->at(currentVector);
 
-      if(getVal(x+v.x, y+v.y)!=0)
+      if(getVal(x+size_t(v.x), y+size_t(v.y))!=0)
       {
-        x+=v.x;
-        y+=v.y;
+        x+=size_t(v.x);
+        y+=size_t(v.y);
         return true;
       }
 
@@ -122,9 +122,9 @@ tp_image_utils::ByteMap fillConcaveHull(const tp_image_utils::ByteMap& src, cons
   do
   {
     workDone = false;
-    for(int sy=syMin; sy<syMax; sy++)
+    for(size_t sy=syMin; sy<syMax; sy++)
     {
-      for(int sx=sxMin; sx<sxMax; sx++)
+      for(size_t sx=sxMin; sx<sxMax; sx++)
       {
         if(getVal(sx, sy) == 0)
           continue;
@@ -138,23 +138,23 @@ tp_image_utils::ByteMap fillConcaveHull(const tp_image_utils::ByteMap& src, cons
         bool workDoneInPass=false;
         for(int passc=0; passc<2 && !workDoneInPass; passc++)
         {
-          vectors = (vectors == vectorsA)?vectorsB:vectorsA;
+          vectors = (vectors == &vectorsA)?&vectorsB:&vectorsA;
 
-          for(int i=0; i<4; i++)
+          for(size_t i=0; i<4; i++)
           {
-            Vec v1 = vectors[currentVector];
+            Vec v1 = vectors->at(currentVector);
             currentVector = (currentVector+1)&3;
-            Vec v2 = vectors[currentVector];
+            Vec v2 = vectors->at(currentVector);
 
-            if(getVal(sx+v1.x, sy+v1.y)==0 &&
-               getVal(sx+v2.x, sy+v2.y)!=0)
+            if(getVal(sx+size_t(v1.x), sy+size_t(v1.y))==0 &&
+               getVal(sx+size_t(v2.x), sy+size_t(v2.y))!=0)
               break;
           }
 
           label++;
 
-          int cx = sx;
-          int cy = sy;
+          size_t cx = sx;
+          size_t cy = sy;
 
           //-- Trace with label --------------------------------------------------------------------
           setVal(cx, cy, label, currentVector);

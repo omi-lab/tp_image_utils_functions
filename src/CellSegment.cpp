@@ -6,7 +6,7 @@
 #include "tp_utils/TimeUtils.h"
 #include "tp_utils/DebugUtils.h"
 
-#include <math.h>
+#include <cmath>
 
 namespace tp_image_utils_functions
 {
@@ -26,7 +26,7 @@ void floodGrowCell(tp_image_utils::ByteMap& result,
   tp_image_utils::ByteMap done(w, h);
   done.fill(0);
   std::vector<std::pair<int, int>> queue;
-  queue.push_back({x, y});
+  queue.emplace_back(x, y);
 
   while(!queue.empty())
   {
@@ -47,10 +47,10 @@ void floodGrowCell(tp_image_utils::ByteMap& result,
     mask.setPixel(px, py, 0);
     result.setPixel(px, py, cellID);
 
-    queue.push_back({px+1, py  });
-    queue.push_back({px,   py-1});
-    queue.push_back({px-1, py  });
-    queue.push_back({px  , py+1});
+    queue.emplace_back(px+1, py  );
+    queue.emplace_back(px,   py-1);
+    queue.emplace_back(px-1, py  );
+    queue.emplace_back(px  , py+1);
   }
 }
 
@@ -66,7 +66,7 @@ void boxGrowCell(tp_image_utils::ByteMap& result,
                  int y)
 {
   int r    = (v*params.distanceFieldRadius)/256;// The radius of a circle that fits inside the square.
-  int half = sqrt((r*r)/2);                     // The half width of the square.
+  int half = int(std::sqrt((r*r)/2));           // The half width of the square.
 
   int cxInt = tpMax(0, x-half);
   int cyInt = tpMax(0, y-half);
@@ -358,14 +358,14 @@ tp_image_utils::ByteMap cellSegment(const tp_image_utils::ByteMap& src,
   //shapes possible.
   {
     tp_image_utils::ByteMap resultB = result;
-    tp_image_utils::ByteMap* buffers[] = {&result, &resultB};
-    int b=0;
+    std::array<tp_image_utils::ByteMap*, 2> buffers = {&result, &resultB};
+    size_t b=0;
 
     for(int p=0; p<params.growCellsPasses; p++)
     {
-      tp_image_utils::ByteMap* srcBuffer = buffers[b];
+      tp_image_utils::ByteMap* srcBuffer = buffers.at(b);
       b = (b+1)%2;
-      tp_image_utils::ByteMap* dstBuffer = buffers[b];
+      tp_image_utils::ByteMap* dstBuffer = buffers.at(b);
 
 #if 1
       for(size_t y=0; y<h; y++)
@@ -389,16 +389,16 @@ tp_image_utils::ByteMap cellSegment(const tp_image_utils::ByteMap& src,
               if(yo==0 && xo==0)
                 continue;
 
-              int v = srcBuffer->pixel(x+xo, y+yo);
+              int v = srcBuffer->pixel(x+size_t(xo), y+size_t(yo));
 
               if(v>0)
               {
-                for(int i=0; i<8; i++)
+                for(auto& count : counts)
                 {
-                  if(counts[i][0] == 0 || counts[i][0] == v)
+                  if(count[0] == 0 || count[0] == v)
                   {
-                    counts[i][0] = v;
-                    counts[i][1]++;
+                    count[0] = v;
+                    count[1]++;
                     break;
                   }
                 }
@@ -409,20 +409,20 @@ tp_image_utils::ByteMap cellSegment(const tp_image_utils::ByteMap& src,
           {
             int v=0;
             int c=0;
-            for(int i=0; i<8; i++)
+            for(auto& count : counts)
             {
-              if(counts[i][0] == 0)
+              if(count[0] == 0)
                 break;
 
-              if(counts[i][1] > c)
+              if(count[1] > c)
               {
-                c = counts[i][1];
-                v = counts[i][0];
+                c = count[1];
+                v = count[0];
               }
             }
 
             if(v>0)
-              dstBuffer->setPixel(x, y, v);
+              dstBuffer->setPixel(x, y, uint8_t(v));
           }
         }
       }
@@ -493,7 +493,7 @@ tp_image_utils::ByteMap cellSegment(const tp_image_utils::ByteMap& src,
 #endif
     }
 
-    return *buffers[b];
+    return *buffers.at(b);
   }
 }
 
