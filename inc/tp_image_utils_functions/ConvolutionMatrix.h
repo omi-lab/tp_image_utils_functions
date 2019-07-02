@@ -29,7 +29,7 @@ public:
   size_t height()const;
 
   //################################################################################################
-  std::vector<int> matrixData()const;
+  const std::vector<int>& matrixData()const;
 
   //################################################################################################
   void setMatrixData(const std::vector<int>& matrixData, size_t width, size_t height);

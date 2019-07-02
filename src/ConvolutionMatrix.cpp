@@ -36,7 +36,7 @@ size_t ConvolutionMatrix::height()const
 }
 
 //##################################################################################################
-std::vector<int> ConvolutionMatrix::matrixData()const
+const std::vector<int>& ConvolutionMatrix::matrixData()const
 {
   return m_matrixData;
 }
