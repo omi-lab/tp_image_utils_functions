@@ -18,7 +18,7 @@ ConvolutionMatrix::ConvolutionMatrix(const std::string& text)
 }
 
 //##################################################################################################
-ConvolutionMatrix::ConvolutionMatrix(const std::vector<int>& matrixData, size_t width, size_t height)
+ConvolutionMatrix::ConvolutionMatrix(const std::vector<double>& matrixData, size_t width, size_t height)
 {
   setMatrixData(matrixData, width, height);
 }
@@ -36,13 +36,13 @@ size_t ConvolutionMatrix::height()const
 }
 
 //##################################################################################################
-const std::vector<int>& ConvolutionMatrix::matrixData()const
+const std::vector<double>& ConvolutionMatrix::matrixData()const
 {
   return m_matrixData;
 }
 
 //##################################################################################################
-void ConvolutionMatrix::setMatrixData(const std::vector<int>& matrixData, size_t width, size_t height)
+void ConvolutionMatrix::setMatrixData(const std::vector<double>& matrixData, size_t width, size_t height)
 {
   if(width<3 || (width&1)!=1   ||
      height<3 || (height&1)!=1 ||
@@ -61,7 +61,7 @@ std::string ConvolutionMatrix::toString()const
 {
   std::string output;
 
-  const int* d = m_matrixData.data();
+  const double* d = m_matrixData.data();
 
   for(size_t y=0; y<m_height; y++)
   {
@@ -172,14 +172,14 @@ namespace
 //##################################################################################################
 struct PixelDetails_lt
 {
-  int red;
-  int green;
-  int blue;
+  double red  {0.0};
+  double green{0.0};
+  double blue {0.0};
 };
 }
 
 //##################################################################################################
-tp_image_utils::ColorMap convolutionMatrix(const tp_image_utils::ColorMap& src, const std::vector<int>& matrixData, size_t width, size_t height)
+tp_image_utils::ColorMap convolutionMatrix(const tp_image_utils::ColorMap& src, const std::vector<double>& matrixData, size_t width, size_t height)
 {
   if(width<=1 || height<=1)
     return tp_image_utils::ColorMap();
@@ -204,7 +204,7 @@ tp_image_utils::ColorMap convolutionMatrix(const tp_image_utils::ColorMap& src, 
   {
     for(size_t mx=0; mx<width;  mx++)
     {
-      int weight = matrixData.at((my*width)+mx);
+      double weight = matrixData.at((my*width)+mx);
       for(size_t dy=0; dy<dh; dy++)
       {
         auto* s = src.constData() + ((dy+my)*src.width()) + mx;
@@ -212,9 +212,9 @@ tp_image_utils::ColorMap convolutionMatrix(const tp_image_utils::ColorMap& src, 
         PixelDetails_lt* dMax = d + dw;
         while(d<dMax)
         {
-          d->red   += int(s->r) * weight;
-          d->green += int(s->g) * weight;
-          d->blue  += int(s->b) * weight;
+          d->red   += double(s->r) * weight;
+          d->green += double(s->g) * weight;
+          d->blue  += double(s->b) * weight;
 
           d++;
           s++;
@@ -234,9 +234,9 @@ tp_image_utils::ColorMap convolutionMatrix(const tp_image_utils::ColorMap& src, 
 
       while(d<dMax)
       {
-        d->r = uint8_t(tpBound(0, s->red   / int(size), 255));
-        d->g = uint8_t(tpBound(0, s->green / int(size), 255));
-        d->b = uint8_t(tpBound(0, s->blue  / int(size), 255));
+        d->r = uint8_t(tpBound(0, int(s->red  ) / int(size), 255));
+        d->g = uint8_t(tpBound(0, int(s->green) / int(size), 255));
+        d->b = uint8_t(tpBound(0, int(s->blue ) / int(size), 255));
         d->a = 255;
         d++;
         s++;
