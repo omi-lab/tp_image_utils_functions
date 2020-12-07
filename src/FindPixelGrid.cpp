@@ -107,9 +107,9 @@ float FindPixelGrid::squaredSD(const std::vector<int>& values, float& mean)
   std::vector<float> squaredDiffs;
   squaredDiffs.reserve(values.size());
 
-  for(float value : values)
+  for(auto value : values)
   {
-    float squaredDiff = value - mean;
+    float squaredDiff = float(value) - mean;
     squaredDiff*=squaredDiff;
     squaredDiffs.push_back(squaredDiff);
   }
@@ -381,7 +381,7 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
 
       if(difference < best || a==0)
       {
-        bestAngle = a;
+        bestAngle = float(a);
         best = difference;
       }
     }

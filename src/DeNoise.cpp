@@ -19,7 +19,7 @@ ByteRegions::ByteRegions(const tp_image_utils::ByteMap& src, bool addCorners)
   size_t ci=0;
   regions.resize(w*h);
   map.resize(w*h);
-  int* done      = new int[w*h];
+  int* done    = new int[w*h];
   auto partial = new std::pair<int, int>[w*h*8];
   size_t partialCount=0;
 
@@ -54,17 +54,17 @@ ByteRegions::ByteRegions(const tp_image_utils::ByteMap& src, bool addCorners)
       region.count=0;
 
       partialCount=0;
-      partial[partialCount]=std::pair<int, int>(x-1, y  ); partialCount++;
-      partial[partialCount]=std::pair<int, int>(x+1, y  ); partialCount++;
-      partial[partialCount]=std::pair<int, int>(x  , y-1); partialCount++;
-      partial[partialCount]=std::pair<int, int>(x  , y+1); partialCount++;
+      partial[partialCount]={int(x-1), int(y  )}; partialCount++;
+      partial[partialCount]={int(x+1), int(y  )}; partialCount++;
+      partial[partialCount]={int(x  ), int(y-1)}; partialCount++;
+      partial[partialCount]={int(x  ), int(y+1)}; partialCount++;
 
       if(addCorners)
       {
-        partial[partialCount]=std::pair<int, int>(x+1, y+1); partialCount++;
-        partial[partialCount]=std::pair<int, int>(x+1, y-1); partialCount++;
-        partial[partialCount]=std::pair<int, int>(x-1, y-1); partialCount++;
-        partial[partialCount]=std::pair<int, int>(x-1, y+1); partialCount++;
+        partial[partialCount]={int(x+1), int(y+1)}; partialCount++;
+        partial[partialCount]={int(x+1), int(y-1)}; partialCount++;
+        partial[partialCount]={int(x-1), int(y-1)}; partialCount++;
+        partial[partialCount]={int(x-1), int(y+1)}; partialCount++;
       }
 
       while(partialCount>0)
@@ -88,17 +88,17 @@ ByteRegions::ByteRegions(const tp_image_utils::ByteMap& src, bool addCorners)
 
         region.count++;
         map[po]=int(i);
-        partial[partialCount]=std::pair<int, int>(px-1, py  ); partialCount++;
-        partial[partialCount]=std::pair<int, int>(px+1, py  ); partialCount++;
-        partial[partialCount]=std::pair<int, int>(px  , py-1); partialCount++;
-        partial[partialCount]=std::pair<int, int>(px  , py+1); partialCount++;
+        partial[partialCount]={int(px-1), int(py  )}; partialCount++;
+        partial[partialCount]={int(px+1), int(py  )}; partialCount++;
+        partial[partialCount]={int(px  ), int(py-1)}; partialCount++;
+        partial[partialCount]={int(px  ), int(py+1)}; partialCount++;
 
         if(addCorners)
         {
-          partial[partialCount]=std::pair<int, int>(px+1, py+1); partialCount++;
-          partial[partialCount]=std::pair<int, int>(px+1, py-1); partialCount++;
-          partial[partialCount]=std::pair<int, int>(px-1, py-1); partialCount++;
-          partial[partialCount]=std::pair<int, int>(px-1, py+1); partialCount++;
+          partial[partialCount]={int(px+1), int(py+1)}; partialCount++;
+          partial[partialCount]={int(px+1), int(py-1)}; partialCount++;
+          partial[partialCount]={int(px-1), int(py-1)}; partialCount++;
+          partial[partialCount]={int(px-1), int(py+1)}; partialCount++;
         }
       }
     }

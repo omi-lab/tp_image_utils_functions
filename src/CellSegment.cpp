@@ -7,6 +7,7 @@
 #include "tp_utils/DebugUtils.h"
 
 #include <cmath>
+#include <array>
 
 namespace tp_image_utils_functions
 {
@@ -20,21 +21,21 @@ void floodGrowCell(tp_image_utils::ByteMap& result,
                    int x,
                    int y)
 {
-  int w = result.width();
-  int h = result.height();
+  size_t w = result.width();
+  size_t h = result.height();
 
   tp_image_utils::ByteMap done(w, h);
   done.fill(0);
-  std::vector<std::pair<int, int>> queue;
-  queue.emplace_back(x, y);
+  std::vector<std::pair<size_t, size_t>> queue;
+  queue.emplace_back(size_t(x), size_t(y));
 
   while(!queue.empty())
   {
-    std::pair<int, int> point = tpTakeLast(queue);
-    int px = point.first;
-    int py = point.second;
+    auto point = tpTakeLast(queue);
+    size_t px = point.first;
+    size_t py = point.second;
 
-    if(py<0 || px<0 || px>=w || py>=h)
+    if(px>=w || py>=h)
       continue;
 
     if(done.pixel(px, py))
@@ -68,10 +69,10 @@ void boxGrowCell(tp_image_utils::ByteMap& result,
   int r    = (v*params.distanceFieldRadius)/256;// The radius of a circle that fits inside the square.
   int half = int(std::sqrt((r*r)/2));           // The half width of the square.
 
-  int cxInt = tpMax(0, x-half);
-  int cyInt = tpMax(0, y-half);
-  int cxMax = tpMin(w, x+half);
-  int cyMax = tpMin(h, y+half);
+  size_t cxInt = size_t(tpMax(0, x-half));
+  size_t cyInt = size_t(tpMax(0, y-half));
+  size_t cxMax = size_t(tpMin(w, x+half));
+  size_t cyMax = size_t(tpMin(h, y+half));
 
   bool canGrowXp = true; //Can grow up the X axis.
   bool canGrowYp = true; //Can grow up the Y axis.
@@ -85,19 +86,19 @@ void boxGrowCell(tp_image_utils::ByteMap& result,
       if(canGrowXp)
       {
         bool& canGrow = canGrowXp;
-        int&  v       = cxMax;
-        int   oInt    = cyInt;
-        int   oMax    = cyMax;
+        size_t& v     = cxMax;
+        size_t  oInt  = cyInt;
+        size_t  oMax  = cyMax;
 
         canGrow = false;
 
-        int c = v+1;
+        size_t c = v+1;
 
-        if(c>w)
+        if(c>size_t(w))
           break;
 
         bool ok = true;
-        for(int o=oInt; o<oMax; o++)
+        for(size_t o=oInt; o<oMax; o++)
         {
           if(mask.pixel(c, o)<1)
           {
@@ -119,20 +120,20 @@ void boxGrowCell(tp_image_utils::ByteMap& result,
     {
       if(canGrowYp)
       {
-        bool& canGrow = canGrowYp;
-        int&  v       = cyMax;
-        int   oInt    = cxInt;
-        int   oMax    = cxMax;
+        bool&   canGrow = canGrowYp;
+        size_t& v       = cyMax;
+        size_t  oInt    = cxInt;
+        size_t  oMax    = cxMax;
 
         canGrow = false;
 
-        int c = v+1;
+        size_t c = size_t(v)+1;
 
-        if(c>w)
+        if(c>size_t(w))
           break;
 
         bool ok = true;
-        for(int o=oInt; o<oMax; o++)
+        for(size_t o=oInt; o<oMax; o++)
         {
           if(mask.pixel(o, c)<1)
           {
@@ -154,20 +155,20 @@ void boxGrowCell(tp_image_utils::ByteMap& result,
     {
       if(canGrowXm)
       {
-        bool& canGrow = canGrowXm;
-        int&  v       = cxInt;
-        int   oInt    = cyInt;
-        int   oMax    = cyMax;
+        bool&   canGrow = canGrowXm;
+        size_t& v       = cxInt;
+        size_t  oInt    = cyInt;
+        size_t  oMax    = cyMax;
 
         canGrow = false;
 
-        int c = v-1;
+        size_t c = v-1;
 
-        if(c<0)
+        if(c>=cxMax)
           break;
 
         bool ok = true;
-        for(int o=oInt; o<oMax; o++)
+        for(size_t o=oInt; o<oMax; o++)
         {
           if(mask.pixel(c, o)<1)
           {
@@ -189,20 +190,20 @@ void boxGrowCell(tp_image_utils::ByteMap& result,
     {
       if(canGrowYm)
       {
-        bool& canGrow = canGrowYm;
-        int&  v       = cyInt;
-        int   oInt    = cxInt;
-        int   oMax    = cxMax;
+        bool&   canGrow = canGrowYm;
+        size_t& v       = cyInt;
+        size_t  oInt    = cxInt;
+        size_t  oMax    = cxMax;
 
         canGrow = false;
 
-        int c = v-1;
+        size_t c = v-1;
 
-        if(c<0)
+        if(c>=cyMax)
           break;
 
         bool ok = true;
-        for(int o=oInt; o<oMax; o++)
+        for(size_t o=oInt; o<oMax; o++)
         {
           if(mask.pixel(o, c)<1)
           {
@@ -222,9 +223,9 @@ void boxGrowCell(tp_image_utils::ByteMap& result,
   }
   while(canGrowXp || canGrowYp || canGrowXm || canGrowYm);
 
-  for(int cy = cyInt; cy<cyMax; cy++)
+  for(size_t cy=cyInt; cy<cyMax; cy++)
   {
-    uint8_t* d    = mask.data() + (cy*w);
+    uint8_t* d    = mask.data() + (cy*size_t(w));
     uint8_t* dMax = d + cxMax;
     d += cxInt;
     for(; d<dMax; d++)
@@ -233,9 +234,9 @@ void boxGrowCell(tp_image_utils::ByteMap& result,
     }
   }
 
-  for(int cy = cyInt; cy<cyMax; cy++)
+  for(size_t cy=cyInt; cy<cyMax; cy++)
   {
-    uint8_t* d    = result.data() + (cy*w);
+    uint8_t* d    = result.data() + (cy*size_t(w));
     uint8_t* dMax = d + cxMax;
     d += cxInt;
     for(; d<dMax; d++)
@@ -270,8 +271,8 @@ CellGrowMode cellGrowModeFromString(const std::string& mode)
 tp_image_utils::ByteMap cellSegmentInitialCells(const tp_image_utils::ByteMap& src,
                                                 const CellSegmentParameters& params)
 {
-  int w = src.width();
-  int h = src.height();
+  size_t w = src.width();
+  size_t h = src.height();
 
   tp_image_utils::ByteMap result(w, h);
   result.fill(0);
@@ -310,18 +311,18 @@ tp_image_utils::ByteMap cellSegmentInitialCells(const tp_image_utils::ByteMap& s
 
       cellID++;
 
-      int i    = b - ds.constData(); // Index of the most remote pixel.
-      int y    = i / w;              // Y coordinate of the most remote pixel.
-      int x    = i - (y*w);          // X coordinate of the most remote pixel.
+      size_t i = size_t(b - ds.constData()); // Index of the most remote pixel.
+      size_t y = i / w;                      // Y coordinate of the most remote pixel.
+      size_t x = i - (y*w);                  // X coordinate of the most remote pixel.
 
       switch(params.cellGrowMode)
       {
       case CellGrowMode::Box:
-        boxGrowCell(result, mask, params, w, h, cellID, v, x, y);
+        boxGrowCell(result, mask, params, int(w), int(h), cellID, v, int(x), int(y));
         break;
 
       case CellGrowMode::Flood:
-        floodGrowCell(result, mask, cellID, x, y);
+        floodGrowCell(result, mask, cellID, int(x), int(y));
         break;
       }
 
@@ -358,7 +359,7 @@ tp_image_utils::ByteMap cellSegment(const tp_image_utils::ByteMap& src,
   //shapes possible.
   {
     tp_image_utils::ByteMap resultB = result;
-    std::array<tp_image_utils::ByteMap*, 2> buffers = {&result, &resultB};
+    std::array<tp_image_utils::ByteMap*, 2> buffers{&result, &resultB};
     size_t b=0;
 
     for(int p=0; p<params.growCellsPasses; p++)
@@ -500,8 +501,8 @@ tp_image_utils::ByteMap cellSegment(const tp_image_utils::ByteMap& src,
 //##################################################################################################
 tp_image_utils::ByteMap cellSegmentSimple(const tp_image_utils::ByteMap& src, const CellSegmentParameters& params)
 {
-  int w = src.width();
-  int h = src.height();
+  size_t w = src.width();
+  size_t h = src.height();
 
   tp_image_utils::ByteMap result(w, h);
   result.fill(0);
@@ -511,10 +512,10 @@ tp_image_utils::ByteMap cellSegmentSimple(const tp_image_utils::ByteMap& src, co
     tp_image_utils::ByteMap mask = src;
 
     uint8_t cellID = 0;
-    uint8_t cellIDMax = params.maxInitialCells;
-    int x=0;
-    int y=0;
-    int stride=256;
+    uint8_t cellIDMax = uint8_t(params.maxInitialCells);
+    size_t x=0;
+    size_t y=0;
+    size_t stride=256;
 
     auto innerLoops = [&]()
     {
@@ -528,7 +529,7 @@ tp_image_utils::ByteMap cellSegmentSimple(const tp_image_utils::ByteMap& src, co
           if((*r)==0 && (*s)==255)
           {
             cellID++;
-            floodGrowCell(result, mask, cellID, x, y);
+            floodGrowCell(result, mask, cellID, int(x), int(y));
             return true;
           }
         }

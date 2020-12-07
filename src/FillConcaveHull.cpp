@@ -5,6 +5,7 @@
 #include "tp_utils/DebugUtils.h"
 
 #include <cmath>
+#include <array>
 
 namespace tp_image_utils_functions
 {

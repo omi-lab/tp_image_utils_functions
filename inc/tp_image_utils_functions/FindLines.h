@@ -14,14 +14,14 @@ struct FindLines
 {
   //################################################################################################
   static std::vector<std::vector<tp_image_utils::Point>> findLines(const tp_image_utils::ByteMap& source,
-                                                                   int minPoints=40,
-                                                                   int maxDeviation=10);
+                                                                   size_t minPoints=40,
+                                                                   size_t maxDeviation=10);
 
   //################################################################################################
   static std::vector<std::vector<tp_image_utils::Point>> findPolylines(const tp_image_utils::ByteMap& source,
-                                                                       int minPoints=40,
-                                                                       int maxDeviation=10,
-                                                                       int maxJointDistance = 100);
+                                                                       size_t minPoints=40,
+                                                                       size_t maxDeviation=10,
+                                                                       size_t maxJointDistance = 100);
 
   //################################################################################################
   //! This returns a list of closed shapes
@@ -39,9 +39,9 @@ struct FindLines
   \return A list of polygons.
   */
   static std::vector<std::vector<tp_image_utils::Point>> findPolygons(const tp_image_utils::ByteMap& source,
-                                                                      int minPoints=40,
-                                                                      int maxDeviation=10,
-                                                                      int maxJointDistance = 100);
+                                                                      size_t minPoints=40,
+                                                                      size_t maxDeviation=10,
+                                                                      size_t maxJointDistance = 100);
 
   //################################################################################################
   //! This returns a list of 4 sided closed shapes
@@ -57,9 +57,9 @@ struct FindLines
   \return A list of quadrilaterals.
   */
   static std::vector<std::vector<tp_image_utils::Point>> findQuadrilaterals(const tp_image_utils::ByteMap& source,
-                                                                            int minPoints=40,
-                                                                            int maxDeviation=10,
-                                                                            int maxJointDistance = 100);
+                                                                            size_t minPoints=40,
+                                                                            size_t maxDeviation=10,
+                                                                            size_t maxJointDistance = 100);
 
 
 };

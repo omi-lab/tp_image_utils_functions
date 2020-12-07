@@ -42,29 +42,29 @@ std::pair<size_t, size_t> AlignImages::calculateMicroAlignment(const tp_image_ut
 
   if(reference.width()>=minD && reference.height()>=minD)
   {
-    size_t sx = (reference.width()-(2*margin)) / steps;
-    size_t sy = (reference.height()-(2*margin)) / steps;
+    int sx = (int(reference.width ())-(2*int(margin))) / int(steps);
+    int sy = (int(reference.height())-(2*int(margin))) / int(steps);
 
-    for(size_t x=-maxOffset; x<=maxOffset; x++)
+    for(int x=-int(maxOffset); x<=int(maxOffset); x++)
     {
-      for(size_t y=-maxOffset; y<=maxOffset; y++)
+      for(int y=-int(maxOffset); y<=int(maxOffset); y++)
       {
-        size_t s = 0;
-        for(size_t i=0; i<steps; i++)
+        int s = 0;
+        for(int i=0; i<int(steps); i++)
         {
-          for(size_t j=0; j<steps; j++)
+          for(int j=0; j<int(steps); j++)
           {
-            size_t px = (sx * i) + margin;
-            size_t py = (sy * j) + margin;
-            s += size_t(std::abs(int(reference.pixel(px, py)) - int(other.pixel(px-x, py-y))));
+            int px = (sx * i) + int(margin);
+            int py = (sy * j) + int(margin);
+            s += size_t(std::abs(int(reference.pixel(size_t(px), size_t(py))) - int(other.pixel(size_t(px-x), size_t(py-y)))));
           }
         }
 
-        if(s<best)
+        if(size_t(s)<best)
         {
-          best=s;
-          translation.first  = x;
-          translation.second = y;
+          best=size_t(s);
+          translation.first  = size_t(x);
+          translation.second = size_t(y);
         }
       }
     }
@@ -132,8 +132,8 @@ AlignImages::SkewedRegion AlignImages::calculateSkewedRegion(const tp_image_util
   size_t sx = (reference.width()-(2*margin)) / steps;
   size_t sy = (reference.height()-(2*margin)) / steps;
 
-  float fw = reference.width();
-  float fh = reference.height();
+  float fw = float(reference.width());
+  float fh = float(reference.height());
 
   for(int x=-int(maxOffset); x<=int(maxOffset); x++)
   {
@@ -160,7 +160,7 @@ AlignImages::SkewedRegion AlignImages::calculateSkewedRegion(const tp_image_util
           float ofx = float(opx) / fw;
           float ofy = float(opy) / fh;
 
-          float s = abs(int(reference.pixel(px, py)) - int(other.pixel(size_t(opx), size_t(opy))));
+          float s = float(std::abs(int(reference.pixel(px, py)) - int(other.pixel(size_t(opx), size_t(opy)))));
 
           for(CornerDetails_lt* cc : corners)
           {
@@ -189,8 +189,8 @@ AlignImages::SkewedRegion AlignImages::calculateSkewedRegion(const tp_image_util
 
   for(CornerDetails_lt* cc : corners)
   {
-    int px = int((cc->fx*fw) + float(cc->translation.first));
-    int py = int((cc->fy*fh) + float(cc->translation.second));
+    float px = (cc->fx*fw) + float(cc->translation.first);
+    float py = (cc->fy*fh) + float(cc->translation.second);
     result.otherRegion.emplace_back(tp_image_utils::PointTypeRectCorner, px, py);
   }
 
@@ -214,11 +214,11 @@ void AlignImages::extractAndClipPair(const AlignImages::SkewedRegion& skewedRegi
                                    size_t(r.y)+size_t(r.h));
   }
 
-  if((skewedRegion.otherRegion.size() == 4)                                                 &&
-     (skewedRegion.otherRegion.at(0).positionEquals(tp_image_utils::Point(0.0f,          0.0f           ))) &&
-     (skewedRegion.otherRegion.at(1).positionEquals(tp_image_utils::Point(image.width(), 0.0f           ))) &&
-     (skewedRegion.otherRegion.at(2).positionEquals(tp_image_utils::Point(image.width(), image.height() ))) &&
-     (skewedRegion.otherRegion.at(3).positionEquals(tp_image_utils::Point(0.0f,          image.height() ))))
+  if((skewedRegion.otherRegion.size() == 4)                                                                              &&
+     (skewedRegion.otherRegion.at(0).positionEquals(tp_image_utils::Point(0.0f                , 0.0f                 ))) &&
+     (skewedRegion.otherRegion.at(1).positionEquals(tp_image_utils::Point(float(image.width()), 0.0f                 ))) &&
+     (skewedRegion.otherRegion.at(2).positionEquals(tp_image_utils::Point(float(image.width()), float(image.height())))) &&
+     (skewedRegion.otherRegion.at(3).positionEquals(tp_image_utils::Point(0.0f                , float(image.height())))))
     return;
 
   std::vector<std::string> errors;

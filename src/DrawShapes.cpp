@@ -27,10 +27,10 @@ tp_image_utils::ColorMap drawPoints(const tp_image_utils::ColorMap& image,
 
       line.reserve(pts.size()+1);
       for(const auto& p : pts)
-        line.emplace_back(p.x, p.y);
+        line.emplace_back(int(p.x), int(p.y));
 
       if(style.closeLine && pts.empty())
-        line.emplace_back(pts.at(0).x, pts.at(0).y);
+        line.emplace_back(int(pts.at(0).x), int(pts.at(0).y));
 
       drawPolyline(dst, style.lineColor, line);
     }

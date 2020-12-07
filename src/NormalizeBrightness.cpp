@@ -42,35 +42,35 @@ void normalizeBrightness(tp_image_utils::ColorMap& image, int radius, Normalizat
 
   float exaggerationI = 1.0f / exaggeration;
 
-  int w = image.width();
-  int h = image.height();
+  size_t w = image.width();
+  size_t h = image.height();
 
   tp_image_utils::ColorMap results(w, h);
 
-  int stride = image.width();
+  size_t stride = image.width();
 
   const TPPixel* src = image.constData();
   TPPixel* dst = results.data();
 
-  int xMax = (image.width());
-  int yMax = image.height();
-  for(int y=0; y<yMax; y++)
+  size_t xMax = image.width();
+  size_t yMax = image.height();
+  for(size_t y=0; y<yMax; y++)
   {
-    int ys = (y*stride);
+    size_t ys = (y*stride);
 
-    int ryMin = tpMax(0, (y-radius));
-    int ryMax = tpMin(yMax, (y+radius));
-    for(int x=0; x<xMax; x++)
+    int ryMin = tpMax(0, int(y)-radius);
+    int ryMax = tpMin(int(yMax), int(y)+radius);
+    for(size_t x=0; x<xMax; x++)
     {
       int brightness=0;
       int count=0;
       for(int py=ryMin; py<ryMax; py++)
       {
-        int pys = (py*stride);
-        int ry = abs(y-py)/2;
+        int pys = (py*int(stride));
+        int ry = std::abs(int(y)-py)/2;
 
-        int rxMin = tpMax(0, (x-((radius-ry))));
-        int rxMax = tpMin(xMax, ((x+(radius-ry))));
+        int rxMin = tpMax(0, int(x)-(radius-ry));
+        int rxMax = tpMin(int(xMax), int(x)+(radius-ry));
         for(int px=rxMin; px<rxMax; px++)
         {
           const TPPixel& p = src[pys+px];
@@ -160,7 +160,7 @@ void shiftBrightness(tp_image_utils::ColorMap& image, ShiftBrightnessMode mode, 
 
     case ShiftBrightnessMode::ByMedian:
     {
-      std::vector<int> list;
+      std::vector<size_t> list;
       list.reserve(image.size());
       for(; s<sMax; s++)
         list.push_back(s->r+s->g+s->b);
@@ -171,11 +171,11 @@ void shiftBrightness(tp_image_utils::ColorMap& image, ShiftBrightnessMode mode, 
 
     case ShiftBrightnessMode::BySoftMode:
     {
-      std::array<int, 26> bins{0};
+      std::array<size_t, 26> bins{0};
       //bins.fill(0);
       for(; s<sMax; s++)
-        bins.at(int(s->r+s->g+s->b)/30)++;
-      int max = 0;
+        bins.at((s->r+s->g+s->b)/30)++;
+      size_t max = 0;
       for(size_t i=0; i<26; i++)
       {
         if(bins.at(i)>max)
@@ -197,9 +197,9 @@ void shiftBrightness(tp_image_utils::ColorMap& image, ShiftBrightnessMode mode, 
     TPPixel* sMax = s+image.size();
     for(; s<sMax; s++)
     {
-      s->r = tpBound(0, int(s->r+shift), 255);
-      s->g = tpBound(0, int(s->g+shift), 255);
-      s->b = tpBound(0, int(s->b+shift), 255);
+      s->r = uint8_t(tpBound(0, int(s->r+shift), 255));
+      s->g = uint8_t(tpBound(0, int(s->g+shift), 255));
+      s->b = uint8_t(tpBound(0, int(s->b+shift), 255));
     }
   }
 }

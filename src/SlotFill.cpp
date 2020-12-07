@@ -19,8 +19,8 @@ tp_image_utils::ByteMap slotFill(const tp_image_utils::ByteMap& src, const SlotF
 
   float hw = float(dst.width())/1.0f;
   float hh = float(dst.height())/1.0f;
-  float fw = dst.width();
-  float fh = dst.height();
+  float fw = float(dst.width());
+  float fh = float(dst.height());
 
   size_t maxAngle = params.startAngle + params.maxAngle;
   for(size_t a=params.startAngle; a<=maxAngle; a+=params.stepAngle)
@@ -66,7 +66,7 @@ tp_image_utils::ByteMap slotFill(const tp_image_utils::ByteMap& src, const SlotF
         {
           size_t px=0;
           size_t py=0;
-          proj(x, y, px, py);
+          proj(float(x), float(y), px, py);
           (*r) = (px<src.width() && py<src.height())?src.pixel(px, py) : params.slot;
         }
       }
@@ -194,7 +194,7 @@ tp_image_utils::ByteMap slotFill(const tp_image_utils::ByteMap& src, const SlotF
           {
             size_t px=0;
             size_t py=0;
-            proj(i, y, px, py);
+            proj(float(i), float(y), px, py);
 
             if(px<src.width() && py<src.height())
               dst.setPixel(px, py, solid);

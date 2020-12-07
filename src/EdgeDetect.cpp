@@ -34,8 +34,8 @@ tp_image_utils::ByteMap edgeDetect(const tp_image_utils::ColorMap& src, int thre
   tp_image_utils::ByteMap dst(src.width(), src.height());
   uint8_t* d = dst.data();
 
-  int yMax = src.height()-1;
-  for(int y=0; y<yMax; y++)
+  size_t yMax = tpMax(size_t(1), src.height())-1;
+  for(size_t y=0; y<yMax; y++)
   {
     const TPPixel* s = src.constData() + (src.width()*y);
     const TPPixel* s2 = src.constData() + (src.width()*(y+1));
@@ -59,8 +59,7 @@ tp_image_utils::ByteMap edgeDetect(const tp_image_utils::ColorMap& src, int thre
     d++;
   }
 
-  int xMax = dst.width();
-  for(int x=0; x<xMax; x++)
+  for(size_t x=0; x<dst.width(); x++)
   {
     *d = 0;
     d++;
@@ -75,12 +74,12 @@ tp_image_utils::ByteMap edgeDetect(const tp_image_utils::ByteMap& src, uint8_t t
   tp_image_utils::ByteMap dst(src.width(), src.height());
   uint8_t* d = dst.data();
 
-  int yMax = src.height()-1;
-  int xMax = src.width()-1;
+  size_t yMax = tpMax(size_t(1), src.height())-1;
+  size_t xMax = tpMax(size_t(1), src.width())-1;
 
-  for(int y=0; y<yMax; y++)
+  for(size_t y=0; y<yMax; y++)
   {
-    for(int x=0; x<xMax; x++)
+    for(size_t x=0; x<xMax; x++)
     {
       uint8_t c = src.pixel(x, y);
       if(calcDist(c, src.pixel(x+1, y))>threshold)
@@ -98,7 +97,7 @@ tp_image_utils::ByteMap edgeDetect(const tp_image_utils::ByteMap& src, uint8_t t
   }
 
   xMax++;
-  for(int x=0; x<xMax; x++)
+  for(size_t x=0; x<xMax; x++)
   {
     *d = 0;
     d++;
@@ -110,14 +109,14 @@ tp_image_utils::ByteMap edgeDetect(const tp_image_utils::ByteMap& src, uint8_t t
 //##################################################################################################
 tp_image_utils::ByteMap edgeDetectCorner(const tp_image_utils::ByteMap& src, uint8_t threshold)
 {
-  int w = src.width();
-  int h = src.height();
+  size_t w = src.width();
+  size_t h = src.height();
 
   tp_image_utils::ByteMap dst(w, h);
   uint8_t* d = dst.data();
 
-  int yMax = src.height()-1;
-  int xMax = src.width()-2;
+  size_t yMax = tpMax(size_t(1), src.height())-1;
+  size_t xMax = tpMax(size_t(2), src.width())-2;
 
   {
     uint8_t* dMax = d+w;
@@ -125,7 +124,7 @@ tp_image_utils::ByteMap edgeDetectCorner(const tp_image_utils::ByteMap& src, uin
       *d = 0;
   }
 
-  for(int y=1; y<yMax; y++)
+  for(size_t y=1; y<yMax; y++)
   {
     *d = 0;
 

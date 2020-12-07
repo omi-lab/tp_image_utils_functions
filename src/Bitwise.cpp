@@ -1,5 +1,7 @@
 #include "tp_image_utils_functions/Bitwise.h"
 
+#include <array>
+
 namespace tp_image_utils_functions
 {
 

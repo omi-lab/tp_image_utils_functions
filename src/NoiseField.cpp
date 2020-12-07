@@ -9,24 +9,24 @@ tp_image_utils::ByteMap noiseField(const tp_image_utils::ByteMap& src, int radiu
   tp_image_utils::ByteMap dst(src.width(), src.height());
   uint8_t* d = dst.data();
   
-  int xMax = src.width();
-  int yMax = src.height();
-  for(int y=0; y<yMax; y++)
+  size_t xMax = src.width();
+  size_t yMax = src.height();
+  for(size_t y=0; y<yMax; y++)
   {
-    int startY = tpMax(y - radius, 0);
-    int endY = tpMin(y + radius, yMax);
+    size_t startY = tpMax(y - size_t(radius), size_t(0));
+    size_t endY = tpMin(y + size_t(radius), yMax);
     
-    for(int x=0; x<xMax; x++)
+    for(size_t x=0; x<xMax; x++)
     {
       int total = 0;
       int count = 0;
 
-      int startX = tpMax(x - radius, 0);
-      int endX = tpMin(x + radius, xMax);
+      size_t startX = tpMax(x - size_t(radius), size_t(0));
+      size_t endX = tpMin(x + size_t(radius), xMax);
 
-      for(int py=startY; py<endY; py++)
+      for(size_t py=startY; py<endY; py++)
       {
-        for(int px=startX; px<endX; px++)
+        for(size_t px=startX; px<endX; px++)
         {
           if(src.pixel(px, py)>0)
             total++;
@@ -40,7 +40,7 @@ tp_image_utils::ByteMap noiseField(const tp_image_utils::ByteMap& src, int radiu
 
       total = abs(total-cH);
       total = (total*255)/cH;
-      (*d) = 255-total;
+      (*d) = uint8_t(255-total);
       d++;
     }
   }
@@ -60,13 +60,13 @@ struct BinData_lt
 //##################################################################################################
 tp_image_utils::ByteMap noiseFieldGrid(const tp_image_utils::ByteMap& src, int cellSize)
 {
-  int xMax = src.width();
-  int yMax = src.height();
+  size_t xMax = src.width();
+  size_t yMax = src.height();
 
-  int cxMax=(xMax+(cellSize-1))/cellSize;
-  int cyMax=(yMax+(cellSize-1))/cellSize;
+  size_t cxMax=(xMax+tpMax(size_t(1), size_t(cellSize))-size_t(1))/size_t(cellSize);
+  size_t cyMax=(yMax+tpMax(size_t(1), size_t(cellSize))-size_t(1))/size_t(cellSize);
 
-  int binCount = cxMax*cyMax;
+  size_t binCount = cxMax*cyMax;
 
   std::vector<BinData_lt> bins;
   bins.resize(binCount);
@@ -74,11 +74,11 @@ tp_image_utils::ByteMap noiseFieldGrid(const tp_image_utils::ByteMap& src, int c
 
   const uint8_t* s = src.constData();
 
-  for(int y=0; y<yMax; y++)
+  for(size_t y=0; y<yMax; y++)
   {
-    for(int x=0; x<xMax; x++)
+    for(size_t x=0; x<xMax; x++)
     {
-      BinData_lt& bin = binData[((y/cellSize)*cxMax)+(x/cellSize)];
+      BinData_lt& bin = binData[((y/size_t(cellSize))*cxMax)+(x/size_t(cellSize))];
       if((*s)>0)
         bin.total++;
       bin.count++;
@@ -96,7 +96,7 @@ tp_image_utils::ByteMap noiseFieldGrid(const tp_image_utils::ByteMap& src, int c
 
     b->total = abs(b->total-cH);
     b->total = (b->total*255)/cH;
-    (*d) = 255-b->total;
+    (*d) = uint8_t(255-b->total);
   }
 
   return dst;

@@ -31,9 +31,9 @@ class Histogram
   TP_NONCOPYABLE(Histogram);
 public:
   //################################################################################################
-  Histogram(int min, int max, int deviation, int maxBins):
-    m_binCount(tpBound(1, (max - min)+1, maxBins)),
-    m_bins(new int[m_binCount]),
+  Histogram(size_t min, size_t max, size_t deviation, size_t maxBins):
+    m_binCount(tpBound(size_t(1), (max - min)+1, maxBins)),
+    m_bins(new size_t[m_binCount]),
     m_div(float(max-min) / float(m_binCount)),
     m_min(min),
     m_deviation(deviation)
@@ -50,21 +50,21 @@ public:
   //################################################################################################
   void clear()
   {
-    int* b = m_bins;
-    int* bMax = b + m_binCount;
+    size_t* b = m_bins;
+    size_t* bMax = b + m_binCount;
     for(; b<bMax; b++)
       (*b)=0;
   }
 
   //################################################################################################
-  void addPoint(int value)
+  void addPoint(size_t value)
   {
-    int i    = int(float((value-m_deviation) - m_min) / m_div);
-    int iMax = int(float((value+m_deviation) - m_min) / m_div);
+    size_t i    = size_t(float((value-m_deviation) - m_min) / m_div);
+    size_t iMax = size_t(float((value+m_deviation) - m_min) / m_div);
     iMax++;
 
-    i    = tpBound(0, i,    m_binCount);
-    iMax = tpBound(0, iMax, m_binCount);
+    i    = tpBound(size_t(0), i,    m_binCount);
+    iMax = tpBound(size_t(0), iMax, m_binCount);
 
     for(; i<iMax; i++)
       m_bins[i]++;
@@ -72,12 +72,12 @@ public:
 
   //################################################################################################
   //Returns the bin number
-  int maxHits()
+  size_t maxHits()
   {
-    int most=0;
-    int index=0;
+    size_t most=0;
+    size_t index=0;
 
-    for(int i=0; i<m_binCount; i++)
+    for(size_t i=0; i<m_binCount; i++)
     {
       if(m_bins[i]>most)
       {
@@ -90,23 +90,23 @@ public:
   }
 
   //################################################################################################
-  int count(int binNumber)
+  size_t count(size_t binNumber)
   {
-    return (binNumber>=0 && binNumber<m_binCount)?m_bins[binNumber]:0;
+    return (binNumber<m_binCount)?m_bins[binNumber]:0;
   }
 
   //################################################################################################
-  int value(int binNumber)
+  size_t value(size_t binNumber)
   {
-    return int(binNumber*m_div) + m_min;
+    return size_t(float(binNumber)*m_div) + m_min;
   }
 
 private:
-  int   m_binCount;
-  int*  m_bins;
-  float m_div;
-  int   m_min;
-  int   m_deviation;
+  size_t  m_binCount;
+  size_t* m_bins;
+  float   m_div;
+  size_t  m_min;
+  size_t  m_deviation;
 };
 
 //##################################################################################################
@@ -180,7 +180,7 @@ std::vector<Point_lt> calculateLine(const std::vector<Point_lt>& clusterPoints)
   float squaredDist=0;
   for(const Point_lt& p : offsetPoints)
   {
-    float sq = (p.x*p.x) + (p.y*p.y);
+    float sq = float((p.x*p.x) + (p.y*p.y));
     if(sq>squaredDist)
     {
       squaredDist = sq;
@@ -193,8 +193,8 @@ std::vector<Point_lt> calculateLine(const std::vector<Point_lt>& clusterPoints)
 
 
   //-- Now rotate the points so that they are on the same side of the 90 degree line ---------------
-  int iMax = offsetPoints.size();
-  for(int i=0; i<iMax; i++)
+  size_t iMax = offsetPoints.size();
+  for(size_t i=0; i<iMax; i++)
   {
     Point_lt& p = offsetPoints[i];
     if(((rotatedFurthestPoint.x * p.y) - (rotatedFurthestPoint.y * p.x))>0)
@@ -219,7 +219,7 @@ std::vector<Point_lt> calculateLine(const std::vector<Point_lt>& clusterPoints)
 
   //-- Scale the average direction -----------------------------------------------------------------
   {
-    float length = sqrt((furthestPoint.x*furthestPoint.x) + (furthestPoint.y*furthestPoint.y));
+    float length = std::sqrt(float((furthestPoint.x*furthestPoint.x) + (furthestPoint.y*furthestPoint.y)));
 
     ax*=length;
     ay*=length;
@@ -251,8 +251,8 @@ struct IntersectionDetails_lt
 //##################################################################################################
 struct LineDetails_lt
 {
-  std::vector<int> startIntersections;
-  std::vector<int> endIntersections;
+  std::vector<size_t> startIntersections;
+  std::vector<size_t> endIntersections;
 
   //The index of the intersections that have been picked
   int joinStart{-1};
@@ -269,12 +269,12 @@ struct LineDetails_lt
 
 //##################################################################################################
 std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_image_utils::ByteMap& source,
-                                                                      int minPoints,
-                                                                      int maxDeviation)
+                                                                      size_t minPoints,
+                                                                      size_t maxDeviation)
 {
   std::vector<std::vector<tp_image_utils::Point> > results;
 
-  int maxDist = int((2*source.width()) + (2*source.height()));
+  size_t maxDist = (2*source.width()) + (2*source.height());
 
   //-- Extract the points from the source image ----------------------------------------------------
   std::vector<Point_lt> points;
@@ -301,14 +301,14 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
     }
   }
 
-  if(int(points.size())<minPoints)
+  if(points.size()<minPoints)
     return results;
 
   //-- Calculate the vectors and distances ---------------------------------------------------------
-  int* distances = new int[points.size() * 200];
+  size_t* distances = new size_t[points.size() * 200];
 
   {
-    int* dst = distances;
+    size_t* dst = distances;
 
     //The following creates 200 vectors evenly distributed between 0 and 180 degrees. It then
     //rotates the points onto those vectors, this gives us a distance on either the x or the y axis
@@ -318,19 +318,19 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
     {
       float j = -(float(c+1)/50.0f);
       for(const Point_lt& point : tpConst(points))
-        (*(dst++)) = int((j*float(point.y)) - float(point.x)); //Distance on the x axis
+        (*(dst++)) = size_t((j*float(point.y)) - float(point.x)); //Distance on the x axis
 
       j = -(float(c)/50.0f);
       for(const Point_lt& point : tpConst(points))
-        (*(dst++)) = int((j*float(point.x)) - float(point.y)); //Distance on the y axis
+        (*(dst++)) = size_t((j*float(point.x)) - float(point.y)); //Distance on the y axis
 
       j = (float(c+1)/50.0f);
       for(const Point_lt& point : tpConst(points))
-        (*(dst++)) = int((j*float(point.x)) - float(point.y)); //Distance on the y axis
+        (*(dst++)) = size_t((j*float(point.x)) - float(point.y)); //Distance on the y axis
 
       j = (float(c)/50.0f);
       for(const Point_lt& point : tpConst(points))
-        (*(dst++)) = int((j*float(point.y)) - float(point.x)); //Distance on the x axis
+        (*(dst++)) = size_t((j*float(point.y)) - float(point.x)); //Distance on the x axis
     }
   }
 
@@ -342,18 +342,18 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
   for(;;)
   {
     //These hold the details of the largest cluster of values
-    int bestCount = 0;
-    int bestRow   = 0;
-    int bestValue = 0;
+    size_t bestCount = 0;
+    size_t bestRow   = 0;
+    size_t bestValue = 0;
 
     //Find the largest cluester in the remaining data
-    for(int r=0; r<200; r++)
+    for(size_t r=0; r<200; r++)
     {
-      int* dst = distances + (points.size()*r);
+      size_t* dst = distances + (points.size()*r);
 
-      int min =  maxDist;
-      int max = -maxDist;
-      for(int i=0; i<int(points.size()); i++)
+      size_t min = maxDist;
+      size_t max = 0;
+      for(size_t i=0; i<points.size(); i++)
       {
         if(points.at(i).taken)
           continue;
@@ -367,12 +367,12 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
 
       //Add all the points to a histogram
       Histogram histogram(min, max, maxDeviation/2, 10000);
-      for(int i=0; i<int(points.size()); i++)
+      for(size_t i=0; i<points.size(); i++)
         if(!points.at(i).taken)
           histogram.addPoint(dst[i]);
 
-      int index = histogram.maxHits();
-      int count = histogram.count(index);
+      size_t index = histogram.maxHits();
+      size_t count = histogram.count(index);
       if(count>bestCount)
       {
         bestCount = count;
@@ -389,14 +389,14 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
     //First get the points
     std::vector<Point_lt> clusterPoints;
     {
-      int* dst = distances + (points.size()*bestRow);
-      for(int i=0; i<int(points.size()); i++)
+      size_t* dst = distances + (points.size()*bestRow);
+      for(size_t i=0; i<points.size(); i++)
       {
         Point_lt& p = points[i];
         if(p.taken)
           continue;
 
-        int deviation = abs(bestValue - dst[i]);
+        size_t deviation = size_t(std::abs(int(bestValue) - int(dst[i])));
 
         if(deviation<maxDeviation)
         {
@@ -406,14 +406,14 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
       }
     }
 
-    if(int(clusterPoints.size())<minPoints)
+    if(clusterPoints.size()<minPoints)
       break;
 
     //Calculate the line
     {
       std::vector<tp_image_utils::Point>& line = results.emplace_back();
       for(const Point_lt& p : calculateLine(clusterPoints))
-        line.emplace_back(tp_image_utils::Point(p.x, p.y));
+        line.emplace_back(tp_image_utils::Point(float(p.x), float(p.y)));
     }
   }
 
@@ -423,11 +423,11 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findLines(const tp_i
 
 //##################################################################################################
 std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const tp_image_utils::ByteMap& source,
-                                                                          int minPoints,
-                                                                          int maxDeviation,
-                                                                          int maxJointDistance)
+                                                                          size_t minPoints,
+                                                                          size_t maxDeviation,
+                                                                          size_t maxJointDistance)
 {
-  float threshold = maxJointDistance*maxJointDistance;
+  float threshold = float(maxJointDistance*maxJointDistance);
 
   //-- Search for lines in the image ---------------------------------------------------------------
   std::vector<std::vector<tp_image_utils::Point>> lines = findLines(source, minPoints, maxDeviation);
@@ -453,7 +453,7 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
 
   //-- Search for intersections between the lines --------------------------------------------------
   std::vector<IntersectionDetails_lt> intersections;
-  std::unordered_set<int> availableIntersections;
+  std::unordered_set<size_t> availableIntersections;
   for(size_t l=0; l<lMax; l++)
   {
     auto& line = lines[l];
@@ -490,12 +490,12 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
           if(sqLen<threshold)
           {
             intersection.score = sqLen;
-            intersection.id = intersections.size();
-            availableIntersections.insert(intersection.id);
+            intersection.id = int(intersections.size());
+            availableIntersections.insert(size_t(intersection.id));
             intersections.push_back(intersection);
 
-            ((end.first ==0)?     details.startIntersections:     details.endIntersections).push_back(intersection.id);
-            ((end.second==0)?otherDetails.startIntersections:otherDetails.endIntersections).push_back(intersection.id);
+            ((end.first ==0)?     details.startIntersections:     details.endIntersections).push_back(size_t(intersection.id));
+            ((end.second==0)?otherDetails.startIntersections:otherDetails.endIntersections).push_back(size_t(intersection.id));
           }
         }
       }
@@ -506,9 +506,9 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
   //threshold join those line segments. Work along the line doing this.
   while(!availableIntersections.empty())
   {
-    int best=0;
+    size_t best=0;
     float bestScore = threshold;
-    for(int index: tpConst(availableIntersections))
+    for(auto index : availableIntersections)
     {
       const IntersectionDetails_lt& intersection = intersections[index];
       if(intersection.score<bestScore)
@@ -520,21 +520,21 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
 
     {
       IntersectionDetails_lt& intersection = intersections[best];
-      LineDetails_lt& line1Details = lineDetails[intersection.line1];
-      LineDetails_lt& line2Details = lineDetails[intersection.line2];
+      LineDetails_lt& line1Details = lineDetails[size_t(intersection.line1)];
+      LineDetails_lt& line2Details = lineDetails[size_t(intersection.line2)];
 
       if(std::find(line1Details.startIntersections.begin(),
                    line1Details.startIntersections.end(),
                    best) != line1Details.startIntersections.end())
       {
-        line1Details.joinStart = best;
-        for(int i : tpConst(line1Details.startIntersections))
+        line1Details.joinStart = int(best);
+        for(size_t i : line1Details.startIntersections)
           availableIntersections.erase(i);
       }
       else
       {
-        line1Details.joinEnd = best;
-        for(int i : tpConst(line1Details.endIntersections))
+        line1Details.joinEnd = int(best);
+        for(size_t i : line1Details.endIntersections)
           availableIntersections.erase(i);
       }
 
@@ -542,14 +542,14 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
                    line2Details.startIntersections.end(),
                    best) != line2Details.startIntersections.end())
       {
-        line2Details.joinStart = best;
-        for(int i : tpConst(line2Details.startIntersections))
+        line2Details.joinStart = int(best);
+        for(size_t i : line2Details.startIntersections)
           availableIntersections.erase(i);
       }
       else
       {
-        line2Details.joinEnd = best;
-        for(int i : tpConst(line2Details.endIntersections))
+        line2Details.joinEnd = int(best);
+        for(size_t i : line2Details.endIntersections)
           availableIntersections.erase(i);
       }
     }
@@ -575,7 +575,7 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
     {
       //Copying points from (start to end) or (end to start)
       bool startToEnd = true;
-      int idx = index;
+      size_t idx = size_t(index);
       for(;;)
       {
         LineDetails_lt& details = lineDetails[idx];
@@ -588,9 +588,9 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
         int join = startToEnd?details.joinEnd:details.joinStart;
         if(join>=0)
         {
-          const IntersectionDetails_lt& intersection = intersections.at(join);
+          const IntersectionDetails_lt& intersection = intersections.at(size_t(join));
           result.push_back(intersection.point);
-          idx = (intersection.line2==idx)?intersection.line1:intersection.line2;
+          idx = size_t((intersection.line2==int(idx))?intersection.line1:intersection.line2);
           startToEnd = (lineDetails[idx].joinStart==join);
         }
         else
@@ -607,7 +607,7 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
     {
       //Copying points from (start to end) or (end to start)
       bool startToEnd = false;
-      int idx = index;
+      size_t idx = size_t(index);
       lineDetails[idx].done = false;
       for(;;)
       {
@@ -621,9 +621,9 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
         int join = startToEnd?details.joinEnd:details.joinStart;
         if(join>=0)
         {
-          const IntersectionDetails_lt& intersection = intersections.at(join);
+          const IntersectionDetails_lt& intersection = intersections.at(size_t(join));
           result.insert(result.begin(), intersection.point);
-          idx = (intersection.line2==idx)?intersection.line1:intersection.line2;
+          idx = size_t((size_t(intersection.line2)==idx)?intersection.line1:intersection.line2);
           startToEnd = (lineDetails[idx].joinEnd!=join);
         }
         else
@@ -665,13 +665,13 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolylines(const 
 
 //##################################################################################################
 std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolygons(const tp_image_utils::ByteMap& source,
-                                                                         int minPoints,
-                                                                         int maxDeviation,
-                                                                         int maxJointDistance)
+                                                                         size_t minPoints,
+                                                                         size_t maxDeviation,
+                                                                         size_t maxJointDistance)
 {
   std::vector<std::vector<tp_image_utils::Point> > polygons = FindLines::findPolylines(source, minPoints, maxDeviation, maxJointDistance);
 
-  for(int i=polygons.size()-1; i>=0; i--)
+  for(size_t i=polygons.size()-1; i<polygons.size(); i--)
   {
     std::vector<tp_image_utils::Point>& polygon = polygons[i];
 
@@ -690,7 +690,7 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolygons(const t
       }
     }
 
-    polygons.erase(polygons.begin()+i);
+    polygons.erase(polygons.begin()+ptrdiff_t(i));
   }
 
   return polygons;
@@ -698,22 +698,22 @@ std::vector<std::vector<tp_image_utils::Point> > FindLines::findPolygons(const t
 
 //##################################################################################################
 std::vector<std::vector<tp_image_utils::Point> > FindLines::findQuadrilaterals(const tp_image_utils::ByteMap& source,
-                                                                               int minPoints,
-                                                                               int maxDeviation,
-                                                                               int maxJointDistance)
+                                                                               size_t minPoints,
+                                                                               size_t maxDeviation,
+                                                                               size_t maxJointDistance)
 {
   std::vector<std::vector<tp_image_utils::Point> > quadrilaterals = FindLines::findPolygons(source, minPoints, maxDeviation, maxJointDistance);
 
-  for(int i=quadrilaterals.size()-1; i>=0; i--)
+  for(size_t i=quadrilaterals.size()-1; i<quadrilaterals.size(); i--)
   {
     std::vector<tp_image_utils::Point>& quadrilateral = quadrilaterals[i];
 
     if(quadrilateral.size()!=4)
-      quadrilaterals.erase(quadrilaterals.begin()+i);
+      quadrilaterals.erase(quadrilaterals.begin()+ptrdiff_t(i));
     else
     {
-      int pMax = quadrilateral.size();
-      for(int p=0; p<pMax; p++)
+      size_t pMax = quadrilateral.size();
+      for(size_t p=0; p<pMax; p++)
         quadrilateral[p].type = tp_image_utils::PointTypeRectCorner;
     }
   }

@@ -25,11 +25,11 @@ void drawLine(tp_image_utils::ColorMap& image,
     std::swap(y0, y1);
   }
 
-  int w = image.width();
-  int h = image.height();
+  size_t w = image.width();
+  size_t h = image.height();
 
-  const float dx = x1 - x0;
-  const float dy = abs(y1 - y0);
+  const float dx = float(x1 - x0);
+  const float dy = float(std::abs(y1 - y0));
 
   float error = dx / 2.0f;
   const int ystep = (y0 < y1) ? 1 : -1;
@@ -39,8 +39,8 @@ void drawLine(tp_image_utils::ColorMap& image,
   {
     for(int x=x0; x<x1; x++)
     {
-      if(x>=0 && y>=0 && y<w && x<h)
-        image.setPixel(y, x, color);
+      if(x>=0 && y>=0 && y<int(w) && x<int(h))
+        image.setPixel(size_t(y), size_t(x), color);
 
       error -= dy;
       if(error < 0)
@@ -55,8 +55,8 @@ void drawLine(tp_image_utils::ColorMap& image,
   {
     for(int x=x0; x<x1; x++)
     {
-      if(x>=0 && y>=0 && x<w && y<h)
-        image.setPixel(x, y, color);
+      if(x>=0 && y>=0 && x<int(w) && y<int(h))
+        image.setPixel(size_t(x), size_t(y), color);
 
       error -= dy;
       if(error < 0)
