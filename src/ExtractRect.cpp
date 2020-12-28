@@ -1,5 +1,7 @@
 #include "tp_image_utils_functions/ExtractRect.h"
 
+#include "tp_utils/DebugUtils.h"
+
 namespace tp_image_utils_functions
 {
 
@@ -308,7 +310,12 @@ tp_image_utils::ColorMap ExtractRect::extractRect(const tp_image_utils::ColorMap
 
   tp_image_utils::ColorMap result(w, h);
 
-  result.fill(TPPixel(0, 255, 0, 255));
+  float fw = float(maxSX-minSX)/float(w);
+  float fh = float(maxSY-minSY)/float(h);
+
+  result.setFractionalSize(fw, fh);
+
+  result.fill(TPPixel(0, 0, 0, 255));
 
   size_t copyW = (maxSX - minSX);
   size_t maxDX=minDX + copyW;
