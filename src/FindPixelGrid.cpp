@@ -388,7 +388,8 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
 
     //Fine tune the angle
     float aMax = bestAngle + 1.0f;
-    for(float a=bestAngle-1.0f; a<aMax; a+=0.05f)
+    float a=bestAngle-1.0f;
+    while(a<aMax)
     {
       float r = a*3.1415926f/180.0f;
       tp_image_utils::Point v(std::sin(r), std::cos(r));
@@ -411,6 +412,8 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
         bestAngle = a;
         best = difference;
       }
+
+      a+=0.05f;
     }
   }
 
