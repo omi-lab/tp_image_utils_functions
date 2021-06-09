@@ -23,10 +23,10 @@ public:
   ConvolutionMatrix(const std::vector<double>& matrixData, size_t width, size_t height);
 
   //################################################################################################
-  size_t width()const;
+  [[nodiscard]]size_t width()const;
 
   //################################################################################################
-  size_t height()const;
+  [[nodiscard]]size_t height()const;
 
   //################################################################################################
   const std::vector<double>& matrixData()const;
@@ -35,13 +35,13 @@ public:
   void setMatrixData(const std::vector<double>& matrixData, size_t width, size_t height);
 
   //################################################################################################
-  std::string toString()const;
+  [[nodiscard]]std::string toString()const;
 
   //################################################################################################
   void loadString(const std::string& text);
 
   //################################################################################################
-  tp_image_utils::ColorMap convolve(const tp_image_utils::ColorMap& src)const;
+  [[nodiscard]]tp_image_utils::ColorMap convolve(const tp_image_utils::ColorMap& src)const;
 
   //################################################################################################
   //! Create a 3x3 identity matrix
@@ -57,7 +57,7 @@ private:
 };
 
 //##################################################################################################
-//! Extract the colors and remove shading
+//! Apply a convolution matrix to the image
 /*!
 Apply a convolution matrix to the image and return the result.
 
