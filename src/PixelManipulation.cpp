@@ -1,13 +1,19 @@
 #include "tp_image_utils_functions/PixelManipulation.h"
 
+#if defined(TP_WIN32_MINGW) && defined(TP_DEBUG)
+#define NO_EXPRTK
+#endif
+
+#ifndef NO_EXPRTK
 #include "exprtk.hpp"
+#endif
 
 namespace tp_image_utils_functions
 {
 
 namespace
 {
-
+#ifndef NO_EXPRTK
 //##################################################################################################
 using symbol_table_lt =  exprtk::symbol_table<float>;
 using   expression_lt =  exprtk::expression<float>  ;
@@ -123,6 +129,18 @@ Out pixelManipulation(const In& in, const PixelManipulation& params, std::vector
 
   return out;
 }
+#else
+//##################################################################################################
+// This won't compile on MinGW debug builds so just stubb it.
+template<typename Out, typename In>
+Out pixelManipulation(const In& in, const PixelManipulation& params, std::vector<std::string>& errors)
+{
+  TP_UNUSED(params);
+  TP_UNUSED(errors);
+  Out out(in.width(), in.height());
+  return out;
+}
+#endif
 }
 
 //##################################################################################################
