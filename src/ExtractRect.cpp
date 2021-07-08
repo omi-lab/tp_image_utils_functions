@@ -74,16 +74,21 @@ tp_image_utils::ColorMap ExtractRect::extractRect(const tp_image_utils::ColorMap
   sw--;
   sh--;
 
-  std::vector<tp_image_utils::Point> topPoints;
-  std::vector<tp_image_utils::Point> rightPoints;
-  std::vector<tp_image_utils::Point> bottomPoints;
-  std::vector<tp_image_utils::Point> leftPoints;
-
   if(sourcePoints.size()<4)
   {
     errors.emplace_back("To few source points!");
     return tp_image_utils::ColorMap();
   }
+
+  std::vector<tp_image_utils::Point> topPoints;
+  std::vector<tp_image_utils::Point> rightPoints;
+  std::vector<tp_image_utils::Point> bottomPoints;
+  std::vector<tp_image_utils::Point> leftPoints;
+
+  topPoints.reserve(sourcePoints.size());
+  rightPoints.reserve(sourcePoints.size());
+  bottomPoints.reserve(sourcePoints.size());
+  leftPoints.reserve(sourcePoints.size());
 
   topPoints.push_back(sourcePoints.at(0));
   size_t i=0;

@@ -74,9 +74,12 @@ tp_image_utils::ColorMap drawGrid(const tp_image_utils::Grid& grid,
   //Calculate the lines that form the grid
   tp_image_utils::LineCollection lines;
 
+  lines.reserve(cx+cy+2);
+
   for(int c=0; c<=cx; c++)
   {
     tp_image_utils::Line line;
+    line.reserve(2);
     line.push_back(tp_image_utils::Point(grid.origin.x + (float(c)*grid.xAxis.x),          grid.origin.y + (float(c)*grid.xAxis.y)         ));
     line.push_back(tp_image_utils::Point(grid.origin.x + yEnd.x + (float(c)*grid.xAxis.x), grid.origin.y + yEnd.y + (float(c)*grid.xAxis.y)));
     lines.push_back(line);
@@ -85,6 +88,7 @@ tp_image_utils::ColorMap drawGrid(const tp_image_utils::Grid& grid,
   for(int c=0; c<=cy; c++)
   {
     tp_image_utils::Line line;
+    line.reserve(2);
     line.push_back(tp_image_utils::Point(grid.origin.x + (float(c)*grid.yAxis.x),          grid.origin.y + (float(c)*grid.yAxis.y)         ));
     line.push_back(tp_image_utils::Point(grid.origin.x + xEnd.x + (float(c)*grid.yAxis.x), grid.origin.y + xEnd.y + (float(c)*grid.yAxis.y)));
     lines.push_back(line);

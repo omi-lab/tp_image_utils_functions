@@ -145,6 +145,7 @@ float FindPixelGrid::standardDeviation(const std::vector<int>& values, float& me
 std::vector<int> FindPixelGrid::stripOutliers(const std::vector<int>& values, float mean, float squaredSD)
 {
   std::vector<int> results;
+  results.reserve(values.size());
   for(int value : values)
   {
     float squaredDiff = float(value) - mean;
@@ -161,6 +162,7 @@ std::vector<int> FindPixelGrid::stripOutliers(const std::vector<int>& values, fl
 std::vector<float> FindPixelGrid::stripOutliers(const std::vector<float>& values, float mean, float squaredSD)
 {
   std::vector<float> results;
+  results.reserve(values.size());
   for(float value : values)
   {
     float squaredDiff = value - mean;
@@ -176,15 +178,16 @@ std::vector<float> FindPixelGrid::stripOutliers(const std::vector<float>& values
 //##################################################################################################
 std::vector<int> FindPixelGrid::findReversals(const std::vector<uint8_t>& src)
 {
-  std::vector<int> result;
-
   if(src.empty())
-    return result;
+    return std::vector<int>();
 
   int8_t direction=0;
   int previous = src.at(0);
   int accumulator=0;
   bool blackSet=false;
+
+  std::vector<int> result;
+  result.reserve(src.size());
 
   const uint8_t* s = src.data();
   const uint8_t* sMax = s+src.size();
@@ -420,6 +423,10 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
   //-- Filter out lines that are not parallel or perpendicular -------------------------------------
   tp_image_utils::LineCollection hLines;
   tp_image_utils::LineCollection vLines;
+
+  hLines.reserve(vectors.size());
+  vLines.reserve(vectors.size());
+
   {
     float t = params.angleDeviation*3.1415926f/180.0f;
     float r = float(bestAngle)*3.1415926f/180.0f;
@@ -460,6 +467,9 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
   std::vector<float> hPoints; //Points along the y axis
   std::vector<float> vPoints; //Points along the x axis
 
+  hPoints.reserve(hLines.size());
+  vPoints.reserve(vLines.size());
+
   for(const tp_image_utils::Line& line : hLines)
   {
     float a=0.0f;
@@ -483,6 +493,10 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
   //-- Calculate the difference between each line --------------------------------------------------
   std::vector<float> hDeltas; //Deltas along the y axis
   std::vector<float> vDeltas; //Deltas along the x axis
+
+  hDeltas.reserve(hPoints.size());
+  vDeltas.reserve(vPoints.size());
+
   {
     size_t iMax = hPoints.size();
     for(size_t i=1; i<iMax; i++)
@@ -573,7 +587,6 @@ tp_image_utils::Grid FindPixelGrid::findRegularGrid(const tp_image_utils::LineCo
         if(std::fabs(diff) > threshold)
         {
           vPoints.erase(vPoints.begin()+i);
-
         }
         else
         {
