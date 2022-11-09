@@ -1,5 +1,5 @@
-#ifndef tp_image_utils_functions_EdgeDetect_h
-#define tp_image_utils_functions_EdgeDetect_h
+#ifndef tp_image_utils_functions_NoiseField_h
+#define tp_image_utils_functions_NoiseField_h
 
 #include "tp_image_utils_functions/Globals.h"
 

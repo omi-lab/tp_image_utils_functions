@@ -78,3 +78,6 @@ HEADERS += inc/tp_image_utils_functions/DrawMask.h
 
 SOURCES += src/DrawShapes.cpp
 HEADERS += inc/tp_image_utils_functions/DrawShapes.h
+
+SOURCES += src/JoinImages.cpp
+HEADERS += inc/tp_image_utils_functions/JoinImages.h
