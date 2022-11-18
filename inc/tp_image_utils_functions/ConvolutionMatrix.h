@@ -1,9 +1,13 @@
 #ifndef tp_image_utils_functions_ConvolutionMatrix_h
 #define tp_image_utils_functions_ConvolutionMatrix_h
 
-#include "tp_image_utils_functions/Globals.h"
+#include "tp_image_utils_functions/Globals.h" // IWYU pragma: keep
 
-#include "tp_image_utils/ByteMap.h"
+namespace tp_image_utils
+{
+class ColorMap;
+class ColorMapF;
+}
 
 namespace tp_image_utils_functions
 {
@@ -32,6 +36,9 @@ public:
   const std::vector<double>& matrixData()const;
 
   //################################################################################################
+  std::vector<float> matrixDataF()const;
+
+  //################################################################################################
   void setMatrixData(const std::vector<double>& matrixData, size_t width, size_t height);
 
   //################################################################################################
@@ -48,7 +55,13 @@ public:
   void makeIdentity();
 
   //################################################################################################
-  void makeBlur();
+  void makeBlur3();
+
+  //################################################################################################
+  void makeBlur5();
+
+  //################################################################################################
+  void divideBySize();
 
 private:
   std::vector<double> m_matrixData;
@@ -71,6 +84,15 @@ Apply a convolution matrix to the image and return the result.
 \return The image with the convolution matrix applied.
 */
 tp_image_utils::ColorMap convolutionMatrix(const tp_image_utils::ColorMap& src, const std::vector<double>& matrixData, size_t width, size_t height);
+
+//##################################################################################################
+tp_image_utils::ColorMapF convolvePadded(const tp_image_utils::ColorMapF& src, const std::vector<float>& matrixData, size_t width, size_t height);
+
+//##################################################################################################
+tp_image_utils::ColorMapF blur3(const tp_image_utils::ColorMapF& src);
+
+//##################################################################################################
+tp_image_utils::ColorMapF blur5(const tp_image_utils::ColorMapF& src);
 }
 
 #endif
