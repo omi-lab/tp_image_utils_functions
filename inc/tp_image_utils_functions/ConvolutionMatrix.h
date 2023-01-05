@@ -3,6 +3,8 @@
 
 #include "tp_image_utils_functions/Globals.h" // IWYU pragma: keep
 
+#include "glm/glm.hpp" // IWYU pragma: keep
+
 namespace tp_image_utils
 {
 class ColorMap;
@@ -83,10 +85,28 @@ Apply a convolution matrix to the image and return the result.
 
 \return The image with the convolution matrix applied.
 */
-tp_image_utils::ColorMap convolutionMatrix(const tp_image_utils::ColorMap& src, const std::vector<double>& matrixData, size_t width, size_t height);
+tp_image_utils::ColorMap convolutionMatrix(const tp_image_utils::ColorMap& src,
+                                           const std::vector<double>& matrixData,
+                                           size_t width,
+                                           size_t height);
 
 //##################################################################################################
-tp_image_utils::ColorMapF convolvePadded(const tp_image_utils::ColorMapF& src, const std::vector<float>& matrixData, size_t width, size_t height);
+tp_image_utils::ColorMapF convolvePadded(const tp_image_utils::ColorMapF& src,
+                                         const std::vector<float>& matrixData,
+                                         size_t width,
+                                         size_t height);
+
+//##################################################################################################
+std::vector<glm::vec3> gaussBlur(std::vector<glm::vec3>& source,
+                                 size_t w,
+                                 size_t h,
+                                 size_t radius);
+
+//##################################################################################################
+tp_image_utils::ColorMap gaussBlur(const tp_image_utils::ColorMap& source, size_t radius);
+
+//##################################################################################################
+tp_image_utils::ColorMapF gaussBlur(const tp_image_utils::ColorMapF& source, size_t radius);
 
 //##################################################################################################
 tp_image_utils::ColorMapF blur3(const tp_image_utils::ColorMapF& src);

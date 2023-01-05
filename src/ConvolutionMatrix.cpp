@@ -5,10 +5,172 @@
 
 #include "tp_utils/Parallel.h"
 
-#include <string.h>
+#include <cstring>
 
 namespace tp_image_utils_functions
 {
+
+namespace
+{
+//##################################################################################################
+/*!
+ * \param sigma standard deviation
+ * \param n number of boxes
+ * \return
+ */
+std::vector<size_t> boxesForGauss(float sigma, size_t n)
+{
+  // Ideal averaging filter width
+  float wIdeal = std::sqrt((12.0f * sigma*sigma / float(n)) + 1.0f);
+
+  size_t wl = size_t(std::floor(wIdeal));
+  if(wl % 2 == 0)
+    wl--;
+
+  size_t wu = wl + 2;
+
+  auto mIdeal = (12 * sigma*sigma - n * wl*wl - 4 * n*wl - 3 * n) / (-4 * wl - 4);
+  size_t m = size_t(std::round(mIdeal));
+
+  std::vector<size_t> sizes(n);
+  for (size_t i=0; i<n; i++)
+    sizes[i] = i < m ? wl : wu;
+
+  return sizes;
+}
+
+//##################################################################################################
+void boxBlurH_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t w, size_t h, size_t r)
+{
+  const size_t nHead = r+1;
+  const size_t nTail = r;
+  const size_t nBody = w-(nHead+nTail);
+
+  const float iarr = 1.0f / float(r + r + 1);
+
+  size_t c=0;
+  tp_utils::parallel([&](auto locker)
+  {
+    for(;;)
+    {
+      size_t i;
+      locker([&]{i=c; c++;});
+
+      if(i>=h)
+        return;
+
+      {
+        size_t ti = i * w;
+        size_t li = ti;
+        size_t ri = ti + r;
+
+        glm::vec3* liSCL = &scl[li];
+        glm::vec3* riSCL = &scl[ri];
+        glm::vec3* tiTCL = &tcl[ti];
+
+        glm::vec3 fv = scl[ti];
+        glm::vec3 lv = scl[ti + w - 1];
+        glm::vec3 val = float(r + 1)*fv;
+
+        for(size_t j=0; j<r; j++)
+          val += scl[ti+j];
+
+        for(glm::vec3* tiTCLMax=tiTCL+nHead; tiTCL<tiTCLMax; riSCL++, tiTCL++)
+        {
+          val += *riSCL - fv;
+          (*tiTCL) = val*iarr;
+        }
+
+        for(glm::vec3* tiTCLMax=tiTCL+nBody; tiTCL<tiTCLMax; liSCL++, riSCL++, tiTCL++)
+        {
+          val += *riSCL - *liSCL;
+          (*tiTCL) = val*iarr;
+        }
+
+        for(glm::vec3* tiTCLMax=tiTCL+nTail; tiTCL<tiTCLMax; liSCL++, tiTCL++)
+        {
+          val += lv - *liSCL;
+          (*tiTCL) = val*iarr;
+        }
+      }
+    }
+  });
+}
+
+//##################################################################################################
+void boxBlurT_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t w, size_t h, size_t r)
+{
+  float iarr = 1.0f / float(r + r + 1);
+
+  size_t c=0;
+  tp_utils::parallel([&](auto locker)
+  {
+    for(;;)
+    {
+      size_t i;
+      locker([&]{i=c; c++;});
+
+      if(i>=w)
+        return;
+
+      size_t ti = i;
+      size_t li = ti;
+      size_t ri = ti + r * w;
+
+      glm::vec3 fv = scl[ti];
+      glm::vec3 lv = scl[ti + w * (h - 1)];
+      glm::vec3 val = float(r + 1)*fv;
+
+      for(size_t j=0; j<r; j++)
+        val += scl[ti + j * w];
+
+      for(size_t j=0; j<=r; j++)
+      {
+        val += scl[ri] - fv;
+        tcl[ti] = val*iarr;
+        ri += w; ti += w;
+      }
+
+      for(size_t j=r+1; j<h-r; j++)
+      {
+        val += scl[ri] - scl[li];
+        tcl[ti] = val*iarr;
+        li += w;
+        ri += w;
+        ti += w;
+      }
+
+      for(size_t j=h-r; j<h; j++)
+      {
+        val += lv-scl[li];
+        tcl[ti] = val*iarr;
+        li += w;
+        ti += w;
+      }
+    }
+  });
+}
+
+//##################################################################################################
+void boxBlur_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t w, size_t h, size_t r)
+{
+  std::memcpy(tcl.data(), scl.data(), sizeof(glm::vec3)*scl.size());
+  boxBlurH_4(tcl, scl, w, h, r);
+  boxBlurT_4(scl, tcl, w, h, r);
+}
+
+//##################################################################################################
+void gaussBlur_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t w, size_t h, size_t r)
+{
+  std::vector<size_t> bxs = boxesForGauss(float(r), 3);
+  boxBlur_4(scl, tcl, w, h, (bxs[0] - 1) / 2);
+  boxBlur_4(tcl, scl, w, h, (bxs[1] - 1) / 2);
+  boxBlur_4(scl, tcl, w, h, (bxs[2] - 1) / 2);
+}
+
+}
+
+
 
 //##################################################################################################
 ConvolutionMatrix::ConvolutionMatrix()
@@ -338,8 +500,8 @@ tp_image_utils::ColorMapF convolvePadded(const tp_image_utils::ColorMapF& src, c
   for(size_t y1=0; y1<marginY; y1++)
   {
     size_t y2 = (dst.height()-1) - y1;
-    memcpy(dst.data()+dst.width()*y1, src.constData()+src.width()*y1, src.width()*sizeof(glm::vec4));
-    memcpy(dst.data()+dst.width()*y2, src.constData()+src.width()*y2, src.width()*sizeof(glm::vec4));
+    std::memcpy(dst.data()+dst.width()*y1, src.constData()+src.width()*y1, src.width()*sizeof(glm::vec4));
+    std::memcpy(dst.data()+dst.width()*y2, src.constData()+src.width()*y2, src.width()*sizeof(glm::vec4));
   }
 
   // Copy in the left and right
@@ -352,12 +514,100 @@ tp_image_utils::ColorMapF convolvePadded(const tp_image_utils::ColorMapF& src, c
 
     for(size_t y=marginY; y<yMax; y++)
     {
-      memcpy(dst.data()+(y*dst.width())+x1, src.constData()+(y*src.width())+x1, xSize);
-      memcpy(dst.data()+(y*dst.width())+x2, src.constData()+(y*src.width())+x2, xSize);
+      std::memcpy(dst.data()+(y*dst.width())+x1, src.constData()+(y*src.width())+x1, xSize);
+      std::memcpy(dst.data()+(y*dst.width())+x2, src.constData()+(y*src.width())+x2, xSize);
     }
   }
 
   return dst;
+}
+
+//##################################################################################################
+std::vector<glm::vec3> gaussBlur(std::vector<glm::vec3>& source,
+                                 size_t w,
+                                 size_t h,
+                                 size_t radius)
+{
+  std::vector<glm::vec3> target(source.size(), glm::vec3(0.0f,0.0f,0.0f));
+  gaussBlur_4(source, target, w, h, radius);
+  return target;
+}
+
+//##################################################################################################
+tp_image_utils::ColorMap gaussBlur(const tp_image_utils::ColorMap& source, size_t radius)
+{
+  std::vector<glm::vec3> in(source.size(), glm::vec3(0.0f,0.0f,0.0f));
+
+  {
+    auto d = in.data();
+    auto s = source.constData();
+    auto sMax = s+source.size();
+
+    for(; s<sMax; s++, d++)
+    {
+      d->x = s->r;
+      d->y = s->g;
+      d->z = s->b;
+    }
+  }
+
+  std::vector<glm::vec3> out = gaussBlur(in, source.width(), source.height(), radius);
+
+  tp_image_utils::ColorMap result(source.width(), source.height());
+  {
+    auto d = result.data();
+    auto s = out.data();
+    auto sMax = s+out.size();
+
+    for(; s<sMax; s++, d++)
+    {
+      d->r = s->x;
+      d->g = s->y;
+      d->b = s->z;
+      d->a = 255;
+    }
+  }
+
+  return result;
+}
+
+//##################################################################################################
+tp_image_utils::ColorMapF gaussBlur(const tp_image_utils::ColorMapF& source, size_t radius)
+{
+  std::vector<glm::vec3> in(source.size(), glm::vec3(0.0f,0.0f,0.0f));
+
+  {
+    auto d = in.data();
+    auto s = source.constData();
+    auto sMax = s+source.size();
+
+    for(; s<sMax; s++, d++)
+    {
+      d->x = s->x;
+      d->y = s->y;
+      d->z = s->z;
+    }
+  }
+
+  std::vector<glm::vec3> out = gaussBlur(in, source.width(), source.height(), radius);
+
+  tp_image_utils::ColorMapF result(source.width(), source.height());
+  {
+    auto d = result.data();
+    auto s = out.data();
+    auto sMax = s+out.size();
+
+    for(; s<sMax; s++, d++)
+    {
+      d->x = s->x;
+      d->y = s->y;
+      d->z = s->z;
+      d->w = 1.0f;
+    }
+  }
+
+  return result;
+
 }
 
 //##################################################################################################
