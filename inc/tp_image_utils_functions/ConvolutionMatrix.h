@@ -5,6 +5,9 @@
 
 #include "glm/glm.hpp" // IWYU pragma: keep
 
+#include <string>
+#include <vector>
+
 namespace tp_image_utils
 {
 class ColorMap;

@@ -81,3 +81,6 @@ HEADERS += inc/tp_image_utils_functions/DrawShapes.h
 
 SOURCES += src/JoinImages.cpp
 HEADERS += inc/tp_image_utils_functions/JoinImages.h
+
+SOURCES += src/DilateTexture.cpp
+HEADERS += inc/tp_image_utils_functions/DilateTexture.h
