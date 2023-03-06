@@ -561,9 +561,9 @@ tp_image_utils::ColorMap gaussBlur(const tp_image_utils::ColorMap& source, size_
 
     for(; s<sMax; s++, d++)
     {
-      d->r = s->x;
-      d->g = s->y;
-      d->b = s->z;
+      d->r = uint8_t(s->x);
+      d->g = uint8_t(s->y);
+      d->b = uint8_t(s->z);
       d->a = 255;
     }
   }
