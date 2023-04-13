@@ -84,3 +84,6 @@ HEADERS += inc/tp_image_utils_functions/JoinImages.h
 
 SOURCES += src/DilateTexture.cpp
 HEADERS += inc/tp_image_utils_functions/DilateTexture.h
+
+SOURCES += src/BlurColorMap.cpp
+HEADERS += inc/tp_image_utils_functions/BlurColorMap.h
