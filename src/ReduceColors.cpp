@@ -19,6 +19,7 @@ struct Color_lt
   int b;
   int count{0};
 
+  //################################################################################################
   Color_lt(int r_=0, int g_=0, int b_=0):
     r(r_),
     g(g_),
@@ -26,12 +27,14 @@ struct Color_lt
   {
 
   }
-};
 
-bool operator==(const Color_lt& a, const Color_lt& b)
-{
-  return a.r==b.r && a.g==b.g && a.b==b.b;
-}
+  //################################################################################################
+  bool operator==(const Color_lt& b) const
+  {
+    const auto& a=*this;
+    return a.r==b.r && a.g==b.g && a.b==b.b;
+  }
+};
 
 //##################################################################################################
 Color_lt average(const std::vector<const Color_lt*>& colors)
@@ -173,14 +176,12 @@ tp_image_utils::ColorMap reduceColors(const tp_image_utils::ColorMap& src, int c
     {
       size_t least=colors.size();
       size_t removeIndex=bins.size()-1;
-      size_t removeCount=0;
       for(int bb=int(removeIndex); bb>=0; bb--)
       {
         size_t count = bins.at(size_t(bb)).children.size();
         if(count==0)
         {
           bins.erase(bins.begin() + bb);
-          removeCount++;
           removeIndex--;
         }
         else if(count<least)
