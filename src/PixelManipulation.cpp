@@ -76,7 +76,7 @@ void parse(const std::string& expressionString, expression_lt& expression, std::
   {
     errors.push_back("Error: " + parser.error() + " Expression: " + expressionString);
 
-    for (std::size_t i = 0; i < parser.error_count(); ++i)
+    for (size_t i = 0; i < parser.error_count(); ++i)
     {
       const auto error = parser.get_error(i);
       errors.push_back("Error: " + std::to_string(static_cast<int>(i)) +

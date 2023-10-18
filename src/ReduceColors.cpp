@@ -94,9 +94,9 @@ namespace std
 template <>
 struct hash<tp_image_utils_functions::Color_lt>
 {
-  std::size_t operator()(const tp_image_utils_functions::Color_lt& c) const
+  size_t operator()(const tp_image_utils_functions::Color_lt& c) const
   {
-    return std::hash<std::size_t>()(std::size_t(c.r)|(std::size_t(c.g)<<8)|(std::size_t(c.b)<<16));
+    return std::hash<size_t>()(size_t(c.r)|(size_t(c.g)<<8)|(size_t(c.b)<<16));
   }
 };
 }
