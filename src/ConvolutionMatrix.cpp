@@ -40,7 +40,7 @@ std::vector<size_t> boxesForGauss(float sigma, size_t n)
 }
 
 //##################################################################################################
-void boxBlurH_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t w, size_t h, size_t r)
+void boxBlurH_4(glm::vec3* scl, glm::vec3* tcl, size_t w, size_t h, size_t r)
 {
   const size_t nHead = r+1;
   const size_t nTail = r;
@@ -48,13 +48,12 @@ void boxBlurH_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t
 
   const float iarr = 1.0f / float(r + r + 1);
 
-  size_t c=0;
-  tp_utils::parallel([&](auto locker)
+  std::atomic<size_t> c{0};
+  tp_utils::parallel([&](auto /*locker*/)
   {
     for(;;)
     {
-      size_t i;
-      locker([&]{i=c; c++;});
+      size_t const i = c++;
 
       if(i>=h)
         return;
@@ -98,17 +97,16 @@ void boxBlurH_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t
 }
 
 //##################################################################################################
-void boxBlurT_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t w, size_t h, size_t r)
+void boxBlurT_4(glm::vec3* scl, glm::vec3* tcl, size_t w, size_t h, size_t r)
 {
   float iarr = 1.0f / float(r + r + 1);
 
-  size_t c=0;
-  tp_utils::parallel([&](auto locker)
+  std::atomic<size_t> c{0};
+  tp_utils::parallel([&](auto /*locker*/)
   {
     for(;;)
     {
-      size_t i;
-      locker([&]{i=c; c++;});
+      size_t const i = c++;
 
       if(i>=w)
         return;
@@ -152,15 +150,16 @@ void boxBlurT_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t
 }
 
 //##################################################################################################
-void boxBlur_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t w, size_t h, size_t r)
+void boxBlur_4(glm::vec3* scl, glm::vec3* tcl, size_t w, size_t h, size_t r)
 {
-  std::memcpy(tcl.data(), scl.data(), sizeof(glm::vec3)*scl.size());
+  //std::memcpy(tcl.data(), scl.data(), sizeof(glm::vec3)*scl.size());
+  std::memcpy(tcl, scl, sizeof(glm::vec3)*w*h);
   boxBlurH_4(tcl, scl, w, h, r);
   boxBlurT_4(scl, tcl, w, h, r);
 }
 
 //##################################################################################################
-void gaussBlur_4(std::vector<glm::vec3>& scl, std::vector<glm::vec3>& tcl, size_t w, size_t h, size_t r)
+void gaussBlur_4(glm::vec3* scl, glm::vec3* tcl, size_t w, size_t h, size_t r)
 {
   std::vector<size_t> bxs = boxesForGauss(float(r), 3);
   boxBlur_4(scl, tcl, w, h, (bxs[0] - 1) / 2);
@@ -475,13 +474,12 @@ tp_image_utils::ColorMapF convolvePadded(const tp_image_utils::ColorMapF& src, c
     for(size_t mx=0; mx<width;  mx++)
     {
       float weight = matrixData.at((my*width)+mx);
-      size_t dyCounter=0;
-      tp_utils::parallel([&](auto locker)
+      std::atomic<size_t> dyCounter{0};
+      tp_utils::parallel([&](auto /*locker*/)
       {
         for(;;)
         {
-          size_t dy;
-          locker([&]{dy=dyCounter; dyCounter++;});
+          size_t const dy = dyCounter++;
 
           if(dy>=dh)
             return;
@@ -529,8 +527,18 @@ std::vector<glm::vec3> gaussBlur(std::vector<glm::vec3>& source,
                                  size_t radius)
 {
   std::vector<glm::vec3> target(source.size(), glm::vec3(0.0f,0.0f,0.0f));
-  gaussBlur_4(source, target, w, h, radius);
+  gaussBlur_4(source.data(), target.data(), w, h, radius);
   return target;
+}
+
+//##################################################################################################
+void gaussBlur(glm::vec3* source,
+               glm::vec3* target,
+               size_t w,
+               size_t h,
+               size_t radius)
+{
+  gaussBlur_4(source, target, w, h, radius);
 }
 
 //##################################################################################################

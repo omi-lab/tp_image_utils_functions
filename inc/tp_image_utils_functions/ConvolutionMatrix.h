@@ -106,6 +106,13 @@ std::vector<glm::vec3> gaussBlur(std::vector<glm::vec3>& source,
                                  size_t radius);
 
 //##################################################################################################
+void                   gaussBlur(glm::vec3 *source,
+                                 glm::vec3 *target,
+                                 size_t w,
+                                 size_t h,
+                                 size_t radius);
+
+//##################################################################################################
 tp_image_utils::ColorMap gaussBlur(const tp_image_utils::ColorMap& source, size_t radius);
 
 //##################################################################################################
