@@ -100,13 +100,8 @@ tp_image_utils::ColorMapF convolvePadded(const tp_image_utils::ColorMapF& src,
                                          size_t height);
 
 //##################################################################################################
-std::vector<glm::vec3> gaussBlur(std::vector<glm::vec3>& source,
-                                 size_t w,
-                                 size_t h,
-                                 size_t radius);
-
-//##################################################################################################
-void                   gaussBlur(glm::vec3 *source,
+// please note that start is the source data which will not be preserved at the end of operation
+void                   gaussBlur(glm::vec3 *start, //initial buffer to get blur (it will be modified)
                                  glm::vec3 *target,
                                  size_t w,
                                  size_t h,

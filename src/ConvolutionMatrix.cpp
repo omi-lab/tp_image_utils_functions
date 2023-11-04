@@ -152,7 +152,6 @@ void boxBlurT_4(glm::vec3* scl, glm::vec3* tcl, size_t w, size_t h, size_t r)
 //##################################################################################################
 void boxBlur_4(glm::vec3* scl, glm::vec3* tcl, size_t w, size_t h, size_t r)
 {
-  //std::memcpy(tcl.data(), scl.data(), sizeof(glm::vec3)*scl.size());
   std::memcpy(tcl, scl, sizeof(glm::vec3)*w*h);
   boxBlurH_4(tcl, scl, w, h, r);
   boxBlurT_4(scl, tcl, w, h, r);
@@ -521,17 +520,6 @@ tp_image_utils::ColorMapF convolvePadded(const tp_image_utils::ColorMapF& src, c
 }
 
 //##################################################################################################
-std::vector<glm::vec3> gaussBlur(std::vector<glm::vec3>& source,
-                                 size_t w,
-                                 size_t h,
-                                 size_t radius)
-{
-  std::vector<glm::vec3> target(source.size(), glm::vec3(0.0f,0.0f,0.0f));
-  gaussBlur_4(source.data(), target.data(), w, h, radius);
-  return target;
-}
-
-//##################################################################################################
 void gaussBlur(glm::vec3* source,
                glm::vec3* target,
                size_t w,
@@ -544,10 +532,12 @@ void gaussBlur(glm::vec3* source,
 //##################################################################################################
 tp_image_utils::ColorMap gaussBlur(const tp_image_utils::ColorMap& source, size_t radius)
 {
-  std::vector<glm::vec3> in(source.size(), glm::vec3(0.0f,0.0f,0.0f));
+  //std::vector<glm::vec3> in(source.size(), glm::vec3(0.0f,0.0f,0.0f));
+  std::unique_ptr<glm::vec3[]> in( new glm::vec3[source.size()]);
+  std::unique_ptr<glm::vec3[]> out( new glm::vec3[source.size()]);
 
   {
-    auto d = in.data();
+    auto d = in.get();
     auto s = source.constData();
     auto sMax = s+source.size();
 
@@ -559,13 +549,13 @@ tp_image_utils::ColorMap gaussBlur(const tp_image_utils::ColorMap& source, size_
     }
   }
 
-  std::vector<glm::vec3> out = gaussBlur(in, source.width(), source.height(), radius);
+  gaussBlur(in.get(), out.get(), source.width(), source.height(), radius);
 
   tp_image_utils::ColorMap result(source.width(), source.height());
   {
     auto d = result.data();
-    auto s = out.data();
-    auto sMax = s+out.size();
+    auto s = out.get();
+    auto sMax = s+source.size();
 
     for(; s<sMax; s++, d++)
     {
@@ -582,10 +572,11 @@ tp_image_utils::ColorMap gaussBlur(const tp_image_utils::ColorMap& source, size_
 //##################################################################################################
 tp_image_utils::ColorMapF gaussBlur(const tp_image_utils::ColorMapF& source, size_t radius)
 {
-  std::vector<glm::vec3> in(source.size(), glm::vec3(0.0f,0.0f,0.0f));
+  std::unique_ptr<glm::vec3[]> in( new glm::vec3[source.size()]);
+  std::unique_ptr<glm::vec3[]> out( new glm::vec3[source.size()]);
 
   {
-    auto d = in.data();
+    auto d = in.get();
     auto s = source.constData();
     auto sMax = s+source.size();
 
@@ -597,13 +588,13 @@ tp_image_utils::ColorMapF gaussBlur(const tp_image_utils::ColorMapF& source, siz
     }
   }
 
-  std::vector<glm::vec3> out = gaussBlur(in, source.width(), source.height(), radius);
+  gaussBlur(in.get(), out.get(), source.width(), source.height(), radius);
 
   tp_image_utils::ColorMapF result(source.width(), source.height());
   {
     auto d = result.data();
-    auto s = out.data();
-    auto sMax = s+out.size();
+    auto s = out.get();
+    auto sMax = s+source.size();
 
     for(; s<sMax; s++, d++)
     {

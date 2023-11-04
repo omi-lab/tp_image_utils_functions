@@ -15,22 +15,24 @@ void blurColorMap(tp_image_utils::ColorMapF& colorMap, size_t radius)
   if(radius<1)
     return;
 
-  size_t width  = colorMap.width ();
-  size_t height = colorMap.height();
+  size_t const width  = colorMap.width ();
+  size_t const height = colorMap.height();
 
-  std::vector<glm::vec3> input((width*height));
+  std::unique_ptr<glm::vec3[]> input( new glm::vec3[width*height]);
+  std::unique_ptr<glm::vec3[]> output( new glm::vec3[width*height]);
 
   size_t xOffset = colorMap.width ();
   size_t yOffset = colorMap.height();
 
+
   {
-    size_t c=0;
-    tp_utils::parallel([&](auto locker)
+    std::atomic<size_t> c{0};
+    auto input_ptr = input.get();
+    tp_utils::parallel([&](auto /*locker*/)
     {
       for(;;)
       {
-        size_t y;
-        locker([&]{y=c; c++;});
+        size_t y = c++;
 
         if(y>=height)
           return;
@@ -39,24 +41,24 @@ void blurColorMap(tp_image_utils::ColorMapF& colorMap, size_t radius)
         for(size_t x=0; x<width; x++)
         {
           size_t xSource = (x+xOffset) % colorMap.width();
-          input[x+(y*width)] = glm::vec4(colorMap.pixel(xSource, ySource));
+          input_ptr[x+(y*width)] = colorMap.pixel(xSource, ySource);
         }
       }
     });
   }
 
-  std::vector<glm::vec3> output = tp_image_utils_functions::gaussBlur(input, colorMap.width(), colorMap.height(), radius);
+  tp_image_utils_functions::gaussBlur(input.get(), output.get(), width, height, radius);
 
   {
     glm::vec4* dstData = colorMap.data();
 
-    size_t c=0;
-    tp_utils::parallel([&](auto locker)
+    std::atomic<size_t> c{0};
+    auto output_ptr = output.get();
+    tp_utils::parallel([&](auto /*locker*/)
     {
       for(;;)
       {
-        size_t y;
-        locker([&]{y=c; c++;});
+        size_t y = c++;
 
         if(y>=colorMap.height())
           return;
@@ -65,7 +67,7 @@ void blurColorMap(tp_image_utils::ColorMapF& colorMap, size_t radius)
         glm::vec4* dstMax = dst+colorMap.width();
         size_t offset = ((y) * colorMap.width() );
         for(; dst<dstMax; dst++, offset++)
-          *dst = glm::vec4(output[offset], 1.0f);
+          *dst = glm::vec4(output_ptr[offset], 1.0f);
       }
     });
   }
