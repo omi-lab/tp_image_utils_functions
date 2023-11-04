@@ -263,7 +263,7 @@ void ConvolutionMatrix::loadString(const std::string& text)
   m_height = 0;
 
   std::vector<std::string> rows;
-  tpSplit(rows, text, '|', tp_utils::SplitBehavior::SkipEmptyParts);
+  tpSplit(rows, text, '|', TPSplitBehavior::SkipEmptyParts);
 
   m_width = rows.size();
 
@@ -276,7 +276,7 @@ void ConvolutionMatrix::loadString(const std::string& text)
   for(const std::string& row : tpConst(rows))
   {
     std::vector<std::string> parts;
-    tpSplit(parts, row, ',', tp_utils::SplitBehavior::SkipEmptyParts);
+    tpSplit(parts, row, ',', TPSplitBehavior::SkipEmptyParts);
 
     if(m_height<1)
     {
