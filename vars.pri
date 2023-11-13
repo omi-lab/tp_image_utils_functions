@@ -87,3 +87,9 @@ HEADERS += inc/tp_image_utils_functions/DilateTexture.h
 
 SOURCES += src/BlurColorMap.cpp
 HEADERS += inc/tp_image_utils_functions/BlurColorMap.h
+
+SOURCES += src/BoxBlur.cpp
+HEADERS += inc/tp_image_utils_functions/BoxBlur.h
+
+SOURCES += src/GaussBlurEngine.cpp
+HEADERS += inc/tp_image_utils_functions/GaussBlurEngine.h
