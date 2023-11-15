@@ -227,12 +227,6 @@ public:
   {
     cl::Platform::get(&all_platforms);
 
-    if(all_platforms.size()==0)
-    {
-      errors << "No platforms found. Check OpenCL installation!" << std::endl;
-      return;
-    }
-
     errors << std::endl;
     errors << "n platforms: " << all_platforms.size() << std::endl;
     for(const auto& platform : all_platforms)
@@ -245,6 +239,12 @@ public:
       platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
       for(const auto& device : devices)
         errors << "device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+    }
+
+    if(all_platforms.size()==0)
+    {
+      errors << "No platforms found. Check OpenCL installation!" << std::endl;
+      return;
     }
 
     cl::Platform default_platform=all_platforms[0];
