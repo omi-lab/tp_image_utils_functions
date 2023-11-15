@@ -233,9 +233,13 @@ public:
       return;
     }
 
+    errors << std::endl;
     errors << "n platforms: " << all_platforms.size() << std::endl;
     for(const auto& platform : all_platforms)
     {
+      errors << "------------------ " << std::endl;
+      errors << "Platform: " << platform.getInfo<CL_PLATFORM_NAME>() << std::endl;
+
       //get default device of the default platform
       std::vector<cl::Device> devices;
       platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
@@ -247,7 +251,7 @@ public:
     info << "Using platform: "<< default_platform.getInfo<CL_PLATFORM_NAME>()<< std::endl;
 
     //get default device of the default platform
-    default_platform.getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
+    default_platform.getDevices(CL_DEVICE_TYPE_GPU, &all_devices);
     if(all_devices.size()==0){
       errors << " No devices found. Check OpenCL installation!" << std::endl;
       return;
