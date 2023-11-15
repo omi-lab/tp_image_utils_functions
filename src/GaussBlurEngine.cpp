@@ -200,11 +200,13 @@ void kernel boxBlurT_4(global float* scl_, global float* tcl_, int w, int h, int
 #endif
 
 
-namespace tp_image_utils_functions{
+namespace tp_image_utils_functions
+{
 
 #ifdef USE_OPENCL
 
-class GaussBlurEngine::GaussBlurAccelerator{
+class GaussBlurEngine::GaussBlurAccelerator
+{
 
 private:
   std::vector<cl::Platform> all_platforms;
@@ -265,7 +267,8 @@ public:
 
   void doBlur(float* scl, size_t w, size_t h, size_t r)
   {
-    if(!isFailed()){
+    if(!isFailed())
+    {
       //For arrays source, target, we need to allocate the space on the device:
       size_t bufSize = sizeof(float)*h*w*3;
 
@@ -280,27 +283,31 @@ public:
 
       std::vector<size_t> bxs = tp_image_utils_functions::boxesForGauss(float(r), 3);
 
-      for(int i:{0,1,2}){
-        if(1){
+      for(int i:{0,1,2})
+      {
+        if(1)
+        {
           boxBlurH_4.setArg(0, buffer_A);
           boxBlurH_4.setArg(1, buffer_B);
-          boxBlurH_4.setArg(2, (int)w);
-          boxBlurH_4.setArg(3, (int)h);
-          boxBlurH_4.setArg(4, (int)((bxs[i] - 1) / 2));
+          boxBlurH_4.setArg(2, int(w));
+          boxBlurH_4.setArg(3, int(h));
+          boxBlurH_4.setArg(4, int(((bxs[i] - 1) / 2)));
           queue.enqueueNDRangeKernel(boxBlurH_4, cl::NullRange, cl::NDRange(h), cl::NullRange);
           auto err_code = queue.finish();
-          if(err_code !=CL_SUCCESS){
+          if(err_code !=CL_SUCCESS)
+          {
             errors <<" Error executing: " << opencl_errstr(err_code) << std::endl;
             return;
           }
         }
 
-        if(1){
+        if(1)
+        {
           boxBlurT_4.setArg(0, buffer_B);
           boxBlurT_4.setArg(1, buffer_A);
-          boxBlurT_4.setArg(2, (int)w);
-          boxBlurT_4.setArg(3, (int)h);
-          boxBlurT_4.setArg(4, (int)((bxs[i] - 1) / 2));
+          boxBlurT_4.setArg(2, int(w));
+          boxBlurT_4.setArg(3, int(h));
+          boxBlurT_4.setArg(4, int(((bxs[i] - 1) / 2)));
           queue.enqueueNDRangeKernel(boxBlurT_4, cl::NullRange, cl::NDRange(w), cl::NullRange);
           auto err_code = queue.finish();
           if(err_code !=CL_SUCCESS){
