@@ -150,13 +150,10 @@ void boxBlurT_4(float* scl_, float* tcl_, size_t w, size_t h, size_t r)
 }
 
 //##################################################################################################
-void boxBlur_4(float* scl, float* tcl, size_t w, size_t h, size_t r)
+void boxBlur_4(float* scl, float* aux, size_t w, size_t h, size_t r)
 {
-//  std::memcpy(tcl, scl, sizeof(float3)*w*h);
-//  boxBlurH_4(tcl, scl, w, h, r);
-//  boxBlurT_4(scl, tcl, w, h, r);
-  boxBlurH_4(scl, tcl, w, h, r);
-  boxBlurT_4(tcl, scl, w, h, r);
+  boxBlurH_4(scl, aux, w, h, r);
+  boxBlurT_4(aux, scl, w, h, r);
 }
 
 }
@@ -185,16 +182,12 @@ std::vector<size_t> boxesForGauss(float sigma, size_t n)
 }
 
 ////##################################################################################################
-void gaussBlur_4_cpu(float* scl, float* tcl, size_t w, size_t h, size_t r)
+void gaussBlur_4_cpu(float* scl, float* aux, size_t w, size_t h, size_t r)
 {
   std::vector<size_t> bxs = boxesForGauss(float(r), 3);
-//  boxBlur_4(scl, tcl, w, h, (bxs[0] - 1) / 2);
-//  boxBlur_4(tcl, scl, w, h, (bxs[1] - 1) / 2);
-//  boxBlur_4(scl, tcl, w, h, (bxs[2] - 1) / 2);
-  boxBlur_4(scl, tcl, w, h, (bxs[0] - 1) / 2);
-  boxBlur_4(scl, tcl, w, h, (bxs[1] - 1) / 2);
-  boxBlur_4(scl, tcl, w, h, (bxs[2] - 1) / 2);
-//  std::memcpy(tcl, scl, sizeof(float3)*w*h);
+  boxBlur_4(scl, aux, w, h, (bxs[0] - 1) / 2);
+  boxBlur_4(scl, aux, w, h, (bxs[1] - 1) / 2);
+  boxBlur_4(scl, aux, w, h, (bxs[2] - 1) / 2);
 }
 
 }

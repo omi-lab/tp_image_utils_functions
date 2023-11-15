@@ -339,7 +339,7 @@ class GaussBlurEngine::GaussBlurAccelerator{};
 GaussBlurEngine::GaussBlurEngine(){}
 GaussBlurEngine::~GaussBlurEngine(){}
 
-void GaussBlurEngine::doBlur(float* scl, float* tcl, size_t w, size_t h, size_t r)
+void GaussBlurEngine::doBlur(float* scl, size_t w, size_t h, size_t r)
 {
 #ifdef USE_OPENCL
   if(!oclGaussBlur)
@@ -349,7 +349,10 @@ void GaussBlurEngine::doBlur(float* scl, float* tcl, size_t w, size_t h, size_t 
     oclGaussBlur->doBlur(scl, w, h, r);
   else
 #endif
-    gaussBlur_4_cpu(scl, tcl, w, h, r);
+  {
+    std::unique_ptr<float[]> aux(new float[w*h*3]);
+    gaussBlur_4_cpu(scl, aux.get(), w, h, r);
+  }
 }
 
 std::string GaussBlurEngine::getErrorString()
