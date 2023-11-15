@@ -226,10 +226,23 @@ public:
   GaussBlurAccelerator()
   {
     cl::Platform::get(&all_platforms);
-    if(all_platforms.size()==0){
+
+    if(all_platforms.size()==0)
+    {
       errors << "No platforms found. Check OpenCL installation!" << std::endl;
       return;
     }
+
+    errors << "n platforms: " << all_platforms.size() << std::endl;
+    for(const auto& platform : all_platforms)
+    {
+      //get default device of the default platform
+      std::vector<cl::Device> devices;
+      platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+      for(const auto& device : devices)
+        errors << "device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+    }
+
     cl::Platform default_platform=all_platforms[0];
     info << "Using platform: "<< default_platform.getInfo<CL_PLATFORM_NAME>()<< std::endl;
 
