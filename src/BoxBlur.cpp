@@ -1,5 +1,7 @@
 #include "tp_image_utils_functions/BoxBlur.h"
 
+#include "tp_utils/Parallel.h"
+
 #include <vector>
 #include <cmath>
 #include <thread>
@@ -14,31 +16,19 @@
  * \return
  */
 
-namespace {
-
-//##################################################################################################
-template<typename T>
-void parallel(T worker)
+namespace
 {
-  size_t threads = std::thread::hardware_concurrency();
-  std::vector<std::thread> workers;
-  workers.reserve(threads);
-  for(size_t i=0; i<threads; i++)
-    workers.emplace_back([&]{worker(i);});
-  for(auto& thread : workers)
-    thread.join();
-}
-
-
 
 using float3 = glm::vec3;
 
+//##################################################################################################
 inline float3 getf3(float* v, size_t index = 0)
 {
   index *= 3;
   return { v[index], v[index+1], v[index+2] };
 }
 
+//##################################################################################################
 inline void setf3(float* dst, float3 const& v, size_t index = 0)
 {
   index *= 3;
@@ -58,7 +48,7 @@ void boxBlurH_4(float* scl_, float* tcl_, size_t w, size_t h, size_t r)
   const float iarr = 1.0f / float(r + r + 1);
 
   std::atomic<std::size_t> c{0};
-  parallel([&](auto /*threadNum*/)
+  tp_utils::parallel([&](const auto& /*locker*/)
   {
     for(size_t i = c++;i<h; i=c++)
     {
@@ -104,7 +94,7 @@ void boxBlurT_4(float* scl_, float* tcl_, size_t w, size_t h, size_t r)
   const float iarr = 1.0f / float(r + r + 1);
 
   std::atomic<std::size_t> c{0};
-  parallel([&](auto /*threadNum*/)
+  tp_utils::parallel([&](const auto& /*locker*/)
   {
     for(size_t i = c++; i < w; i = c++){
 
