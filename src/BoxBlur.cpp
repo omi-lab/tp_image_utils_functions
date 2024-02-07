@@ -29,7 +29,7 @@ inline float3 getf3(float* v, size_t index = 0)
 }
 
 //##################################################################################################
-inline void setf3(float* dst, float3 const& v, size_t index = 0)
+inline void setf3(float* dst, const float3& v, size_t index = 0)
 {
   index *= 3;
   dst[index+0] = v.x;
