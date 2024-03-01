@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 
+//compilation controlled by define option:
 //#define USE_OPENCL
 
 namespace tp_image_utils_functions
