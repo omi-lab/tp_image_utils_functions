@@ -93,3 +93,6 @@ HEADERS += inc/tp_image_utils_functions/BoxBlur.h
 
 SOURCES += src/GaussBlurEngine.cpp
 HEADERS += inc/tp_image_utils_functions/GaussBlurEngine.h
+
+SOURCES += src/DiffImages.cpp
+HEADERS += inc/tp_image_utils_functions/DiffImages.h
