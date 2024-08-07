@@ -49,13 +49,10 @@ bool rotateSkyBox(const std::string& inputHDRIPath, const glm::mat3& R, std::str
       dstCoord.y = 1.f-dstCoord.y;
       dstCoord -= 0.5f;
       dstCoord *= 2.0f;
-      dstCoord.x += 1.0f;
+      dstCoord.x += 1.0f; // x is now in range [0,2], y range is [-1,1]
 
-      float lon = dstCoord.x * glm::pi<float>();
-      float lat = dstCoord.y * (0.5f*glm::pi<float>());
-
-      // apply 90 degree rotation
-      lon += 0.5f*glm::pi<float>();
+      float lon = dstCoord.x * glm::pi<float>(); // range [0,2*pi]
+      float lat = dstCoord.y * (0.5f*glm::pi<float>()); // range [-pi/2,pi/2]
 
       glm::vec3 vec;
       vec.x = std::cos(lat) * std::sin(lon);
@@ -65,6 +62,9 @@ bool rotateSkyBox(const std::string& inputHDRIPath, const glm::mat3& R, std::str
       vec = R*vec;
 
       lon = std::atan2(vec.x, vec.y);
+      if(0.f > lon)
+        lon += 2.f*glm::pi<float>();
+
       lat = std::asin(vec.z);
 
       glm::vec2 srcCoord{lon/glm::pi<float>(), lat/(0.5f*glm::pi<float>())};
