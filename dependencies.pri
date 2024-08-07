@@ -1,3 +1,4 @@
+DEPENDENCIES += lib_tinyexr
 DEPENDENCIES += lib_exprtk
 DEPENDENCIES += tp_quad_tree
 DEPENDENCIES += tp_image_utils
