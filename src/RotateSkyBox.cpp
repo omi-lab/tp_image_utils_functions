@@ -46,12 +46,12 @@ bool rotateSkyBox(const std::string& inputHDRIPath, const glm::mat3& R, std::str
     for(size_t x=0; x<w; x++, dst += 4)
     {
       glm::vec2 dstCoord{(0.5f+float(x))*invW, (0.5f+float(y))*invH};
-      dstCoord.y = 1.f-dstCoord.y;
+      dstCoord.y = 1.f-dstCoord.y; // so that image coordinate y points up
       dstCoord -= 0.5f;
-      dstCoord *= 2.0f;
-      dstCoord.x += 1.0f; // x is now in range [0,2], y range is [-1,1]
+      dstCoord *= 2.0f; // x and y are now in range [-1,1]
+      //dstCoord.x += 1.0f; // x is now in range [0,2], y range is [-1,1]
 
-      float lon = dstCoord.x * glm::pi<float>(); // range [0,2*pi]
+      float lon = dstCoord.x * glm::pi<float>(); // range [-pi,pi]
       float lat = dstCoord.y * (0.5f*glm::pi<float>()); // range [-pi/2,pi/2]
 
       glm::vec3 vec;
@@ -62,13 +62,10 @@ bool rotateSkyBox(const std::string& inputHDRIPath, const glm::mat3& R, std::str
       vec = R*vec;
 
       lon = std::atan2(vec.x, vec.y);
-      if(0.f > lon)
-        lon += 2.f*glm::pi<float>();
-
       lat = std::asin(vec.z);
 
       glm::vec2 srcCoord{lon/glm::pi<float>(), lat/(0.5f*glm::pi<float>())};
-      srcCoord.x -= 1.f;
+      //srcCoord.x -= 1.f;
       srcCoord *= 0.5f;
       srcCoord += 0.5f;
       srcCoord.y = 1.f-srcCoord.y;
