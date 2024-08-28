@@ -96,6 +96,3 @@ HEADERS += inc/tp_image_utils_functions/GaussBlurEngine.h
 
 SOURCES += src/DiffImages.cpp
 HEADERS += inc/tp_image_utils_functions/DiffImages.h
-
-SOURCES += src/RotateSkyBox.cpp
-HEADERS += inc/tp_image_utils_functions/RotateSkyBox.h
