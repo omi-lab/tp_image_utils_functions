@@ -47,7 +47,7 @@ void boxBlurH_4(float* scl_, float* tcl_, size_t w, size_t h, size_t r)
 
   const float iarr = 1.0f / float(r + r + 1);
 
-  std::atomic<std::size_t> c{0};
+  std::atomic<size_t> c{0};
   tp_utils::parallel([&](const auto& /*locker*/)
   {
     for(size_t i = c++;i<h; i=c++)
@@ -93,7 +93,7 @@ void boxBlurT_4(float* scl_, float* tcl_, size_t w, size_t h, size_t r)
   const int nCnl = 3;
   const float iarr = 1.0f / float(r + r + 1);
 
-  std::atomic<std::size_t> c{0};
+  std::atomic<size_t> c{0};
   tp_utils::parallel([&](const auto& /*locker*/)
   {
     for(size_t i = c++; i < w; i = c++){

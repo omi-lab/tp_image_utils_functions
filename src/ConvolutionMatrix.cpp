@@ -49,7 +49,7 @@ void boxBlurH_4(glm::vec3* scl, glm::vec3* tcl, size_t w, size_t h, size_t r)
 
   const float iarr = 1.0f / float(r + r + 1);
 
-  std::atomic<std::size_t> c{0};
+  std::atomic<size_t> c{0};
   tp_utils::parallel([&](auto /*locker*/)
   {
     for(;;)

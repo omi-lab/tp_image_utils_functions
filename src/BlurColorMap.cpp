@@ -27,7 +27,7 @@ void blurColorMap(tp_image_utils::ColorMapF& colorMap, size_t radius)
 
 
   {
-    std::atomic<std::size_t> c{0};
+    std::atomic<size_t> c{0};
     auto input_ptr = input.get();
     tp_utils::parallel([&](auto /*locker*/)
     {
